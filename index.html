@@ -1030,6 +1030,17 @@ textarea{min-height:65px;resize:vertical}
 
     <!-- ── SETTINGS TAB ── -->
     <div class="page" id="tab-settings">
+      <!-- AI PHOTO SCANNING API KEY -->
+      <div class="card" style="border:2px solid #f59e0b">
+        <div class="card-title">📷 AI Photo Scanning</div>
+        <div id="apiKeyStatus" style="font-size:12px;color:#6b7280;margin-bottom:8px">
+          ⚠️ API key required for photo scanning
+        </div>
+        <input id="apiKeyInput" type="password" placeholder="Paste Anthropic API key here"
+          style="width:100%;background:#f8f9fa;border:2px solid #d1d5db;border-radius:8px;padding:12px;font-size:13px;font-family:monospace;outline:none;margin-bottom:8px">
+        <button class="btn btn-accent" onclick="saveApiKey()">💾 SAVE API KEY</button>
+        <div style="font-size:10px;color:#9ca3af;margin-top:6px">Key is stored only on this device. Never shared.</div>
+      </div>
       <div class="card">
         <div class="card-title">Microsoft 365</div>
         <div id="settingsStatus"></div>
@@ -1354,6 +1365,20 @@ function launchApp(dept) {
 
   // Wire scan buttons after UI is rendered
   setTimeout(wireScanButtons, 300);
+
+  // Update API key status
+  setTimeout(() => {
+    const statusEl = document.getElementById('apiKeyStatus');
+    if (statusEl) {
+      if (getApiKey()) {
+        statusEl.textContent = '✅ API key is set — photo scanning active';
+        statusEl.style.color = '#16a34a';
+      } else {
+        statusEl.textContent = '⚠️ No API key — enter one below to enable photo scanning';
+        statusEl.style.color = '#d97706';
+      }
+    }
+  }, 400);
 
   // Init MSAL if config present
   if (config.clientId && config.tenantId) initMSAL();
@@ -2962,6 +2987,10 @@ function animateScanProgress() {
 async function readWOWithAI(base64, mimeType) {
   document.getElementById('scanReadingMsg').textContent = 'Extracting job details…';
 
+  if (!getApiKey()) {
+    throw new Error('No API key set — go to ⚙️ Settings and add your API key first');
+  }
+
   const prompt = `You are reading a manufacturing Work Order paper called "Discrete Job Routine Report" from Rockwall company.
 
 Extract ONLY these exact fields and return them as a JSON object with no extra text:
@@ -2989,7 +3018,12 @@ Critical rules:
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': getApiKey(),
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 500,
@@ -3079,6 +3113,20 @@ function showScanError(title, detail) {
   document.getElementById('scanErrorMsg').textContent    = title;
   document.getElementById('scanErrorDetail').textContent = detail;
   showScanState('error');
+}
+
+function getApiKey() {
+  return localStorage.getItem('st_apikey') || '';
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput')?.value.trim();
+  if (!key) { toast('Please enter an API key', 'err'); return; }
+  localStorage.setItem('st_apikey', key);
+  document.getElementById('apiKeyInput').value = '';
+  toast('✅ API key saved! Photo scanning is now active!', 'ok');
+  document.getElementById('apiKeyStatus').textContent = '✅ API key is set';
+  document.getElementById('apiKeyStatus').style.color = '#16a34a';
 }
 
 function confirmManualScan() {
