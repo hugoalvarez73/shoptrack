@@ -957,6 +957,7 @@ textarea{min-height:65px;resize:vertical}
             <label>Report Type</label>
             <select id="rpt_type" onchange="updateReportUI()">
               <option value="dept">By Department</option>
+              <option value="tool">By Tool (All 21 Tools)</option>
               <option value="operator">By Operator / Worker</option>
               <option value="qc">QC Checks &amp; Issues Only</option>
             </select>
@@ -1508,7 +1509,9 @@ function lookupWO() {
     }
   }
 
-  document.getElementById('f_name').value = '';
+  // Remember operator name for the shift
+  const shiftName = getShiftName();
+  document.getElementById('f_name').value = shiftName || '';
   photos = { firstArticle:[], defect:[], defectOnly:[] };
   renderPGrid('pg-firstArticle','firstArticle');
   renderPGrid('pg-defect','defect');
@@ -1535,6 +1538,9 @@ function startSession() {
   if (!wo)   { toast('Enter W/O number','err'); return; }
   if (!name) { toast('Enter your name','err'); return; }
   if (!isFiber && !toolId) { toast('Select a tool','err'); return; }
+
+  // Remember name for this shift
+  saveShiftName(name);
 
   const now = new Date();
   currentSession = {
@@ -2051,6 +2057,32 @@ function getReportData() {
     return { type, records: [], qcChecks: qcData.filter(c => filterDate({date:c.date})), deptId, period };
   }
 
+  if (type === 'tool') {
+    const allRecs = records.filter(filterDate);
+    const toolMap = {};
+    // Seed ALL tools from ALL departments so every tool shows even with 0 activity
+    DEPARTMENTS.forEach(dept => {
+      (allTools[dept.id] || []).forEach(t => {
+        const key = dept.id + '|' + t.id;
+        toolMap[key] = { toolId: t.id, toolName: t.name, dept: dept.label, deptId: dept.id, sessions: 0, totalMins: 0, defects: 0, operators: new Set(), lastWO: '--' };
+      });
+    });
+    // Fill in actual session data
+    allRecs.forEach(r => {
+      if (!r.toolId) return;
+      const key = r.dept + '|' + r.toolId;
+      if (!toolMap[key]) toolMap[key] = { toolId: r.toolId, toolName: r.toolName||r.toolId, dept: DEPARTMENTS.find(d=>d.id===r.dept)?.label||r.dept, deptId: r.dept, sessions: 0, totalMins: 0, defects: 0, operators: new Set(), lastWO: '--' };
+      const e = toolMap[key];
+      e.sessions++;
+      e.totalMins += Number(r.durationMins)||0;
+      if (r.defect) e.defects++;
+      if (r.operator) e.operators.add(r.operator);
+      if (r.wo) e.lastWO = r.wo;
+    });
+    const toolList = Object.values(toolMap).map(t => ({...t, operators: [...t.operators]}));
+    return { type, records: allRecs, toolList, qcChecks: [], deptId, period };
+  }
+
   let recs = records.filter(filterDate);
   if (deptId !== 'ALL') recs = recs.filter(r => r.dept === deptId);
   if (opName) recs = recs.filter(r => (r.operator||'').toLowerCase().includes(opName));
@@ -2108,6 +2140,25 @@ function previewReport(data) {
   const el = document.getElementById('rpt_preview_content');
   const periodLabel = document.getElementById('rpt_period').options[document.getElementById('rpt_period').selectedIndex].text;
   document.getElementById('rpt_preview').style.display = 'block';
+
+  if (data.type === 'tool') {
+    const depts = [...new Set(data.toolList.map(t=>t.dept))].sort();
+    let html = '<h3 style="font-family:var(--fh);font-size:18px;margin-bottom:12px">ALL TOOLS SUMMARY</h3>';
+    depts.forEach(deptName => {
+      const deptTools = data.toolList.filter(t=>t.dept===deptName).sort((a,b)=>a.toolName.localeCompare(b.toolName,undefined,{numeric:true}));
+      if (!deptTools.length) return;
+      html += '<div style="margin-bottom:16px"><div style="font-family:var(--fh);font-size:14px;font-weight:700;color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:4px;margin-bottom:8px">'+deptName.toUpperCase()+'</div>';
+      html += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
+      html += '<tr style="background:#f1f5f9"><th style="padding:6px;text-align:left;border:1px solid #e2e8f0">Tool</th><th style="padding:6px;text-align:center;border:1px solid #e2e8f0">Sessions</th><th style="padding:6px;text-align:center;border:1px solid #e2e8f0">Time (min)</th><th style="padding:6px;text-align:center;border:1px solid #e2e8f0">Defects</th><th style="padding:6px;text-align:left;border:1px solid #e2e8f0">Last W/O</th></tr>';
+      deptTools.forEach(t => {
+        const defectColor = t.defects > 0 ? 'color:#dc2626;font-weight:700' : '';
+        html += '<tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:600">'+t.toolName+'</td><td style="padding:6px;text-align:center;border:1px solid #e2e8f0">'+t.sessions+'</td><td style="padding:6px;text-align:center;border:1px solid #e2e8f0">'+Math.round(t.totalMins)+'</td><td style="padding:6px;text-align:center;border:1px solid #e2e8f0;'+defectColor+'">'+t.defects+'</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px">'+t.lastWO+'</td></tr>';
+      });
+      html += '</table></div>';
+    });
+    el.innerHTML = html;
+    return;
+  }
 
   if (data.type === 'qc') {
     const issues = data.qcChecks.filter(c=>c.result==='ISSUE');
@@ -2218,6 +2269,25 @@ function printReport(data) {
           ${c.action?`<div class="action-box"><b>Action Taken:</b> ${c.action}</div>`:''}
           ${c.photos?.length?`<div class="photos">${c.photos.map(p=>`<img src="${p}">`).join('')}</div>`:''}
         </div>`).join('')}`:''}`;
+
+
+  } else if (data.type === 'tool') {
+    const depts = [...new Set(data.toolList.map(t=>t.dept))].sort();
+    const total = data.toolList.length;
+    const active = data.toolList.filter(t=>t.sessions>0).length;
+    const totalDefects = data.toolList.reduce((s,t)=>s+t.defects,0);
+    const totalMins = data.toolList.reduce((s,t)=>s+t.totalMins,0);
+    bodyHTML = '<div class="summary"><div class="sum-box blue"><div class="sum-val">'+total+'</div><div class="sum-lbl">Total Tools</div></div><div class="sum-box green"><div class="sum-val">'+active+'</div><div class="sum-lbl">Active</div></div><div class="sum-box red"><div class="sum-val">'+totalDefects+'</div><div class="sum-lbl">Total Defects</div></div><div class="sum-box purple"><div class="sum-val">'+Math.round(totalMins)+'</div><div class="sum-lbl">Total Min</div></div></div>';
+    depts.forEach(function(deptName) {
+      var deptTools = data.toolList.filter(function(t){return t.dept===deptName;}).sort(function(a,b){return a.toolName.localeCompare(b.toolName,undefined,{numeric:true});});
+      if (!deptTools.length) return;
+      bodyHTML += '<div class="section-title">'+deptName.toUpperCase()+'</div><table><thead><tr><th>Tool</th><th>Sessions</th><th>Time (min)</th><th>Defects</th><th>Last W/O</th></tr></thead><tbody>';
+      deptTools.forEach(function(t) {
+        var dc = t.defects>0 ? 'color:#dc2626;font-weight:bold' : '';
+        bodyHTML += '<tr><td><b>'+t.toolName+'</b></td><td style="text-align:center">'+t.sessions+'</td><td style="text-align:center">'+Math.round(t.totalMins)+'</td><td style="text-align:center;'+dc+'">'+t.defects+'</td><td>'+t.lastWO+'</td></tr>';
+      });
+      bodyHTML += '</tbody></table>';
+    });
 
   } else {
     const grouped = {};
@@ -2492,6 +2562,9 @@ function setQCResult(result) {
 function saveQCCheck() {
   if (!currentQCJob) { toast('Scan a W/O first','err'); return; }
   if (!qcResult)     { toast('Select Good or Issue','err'); return; }
+  // Save QC name to shift memory so it auto-fills next round
+  const auditorEl = document.getElementById('qc_auditor');
+  if (auditorEl && auditorEl.value.trim()) saveShiftName(auditorEl.value.trim());
   let issueTypes = [];
   if (qcResult === 'ISSUE') {
     document.querySelectorAll('#issueTypeList input:checked').forEach(cb => issueTypes.push(cb.value));
@@ -2667,6 +2740,12 @@ function initQCTab() {
   populateQCToolSelect();
   renderQCRoundLog();
   updateQCShiftSummary();
+  // Auto-fill QC name from shift memory
+  const shiftName = getShiftName();
+  if (shiftName) {
+    const el1 = document.getElementById('qc_auditor');
+    if (el1 && !el1.value) el1.value = shiftName;
+  }
 }
 
 function initMSAL() {
@@ -3113,6 +3192,19 @@ function showScanError(title, detail) {
   document.getElementById('scanErrorMsg').textContent    = title;
   document.getElementById('scanErrorDetail').textContent = detail;
   showScanState('error');
+}
+
+function getShiftName() {
+  try {
+    const data = JSON.parse(localStorage.getItem('st_shiftName') || '{}');
+    const today = new Date().toLocaleDateString('en-US');
+    return data.date === today ? data.name : '';
+  } catch(e) { return ''; }
+}
+
+function saveShiftName(name) {
+  const today = new Date().toLocaleDateString('en-US');
+  localStorage.setItem('st_shiftName', JSON.stringify({ name, date: today }));
 }
 
 function getApiKey() {
