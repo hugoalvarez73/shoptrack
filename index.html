@@ -8,7 +8,7 @@
 <title>ShopTrack — Universal Production System</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.21.3/zxing.min.js"></script>
-<style>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 :root {
   --bg:#ffffff; --surface:#f4f6f8; --surface2:#e8ecf0; --border:#c8d0da;
   --accent:#e67e00; --accent2:#1d6bc4; --green:#16a34a; --red:#dc2626;
@@ -3093,52 +3093,42 @@ Critical rules:
 - Return ONLY the raw JSON, no markdown, no backticks, no explanation
 - The Job # is the LARGE number/barcode area at the top — it may start with DS-, AP-, or similar
 - If a field is not visible write ""
-- Do not guess — only extract what you can clearly read`;
+async function readWOWithAI(base64, mimeType) {
+    document.getElementById('scanReadingMsg').textContent = 'Reading text from paper (FREE)...';
+    
+    try {
+        // Use Tesseract (FREE) instead of Anthropic (PAID)
+        const result = await Tesseract.recognize(
+            `data:${mimeType};base64,${base64}`,
+            'eng',
+            { logger: m => console.log(m) }
+        );
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': getApiKey(),
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 500,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
-          { type: 'text',  text: prompt }
-        ]
-      }]
-    })
-  });
+        const text = result.data.text;
+        console.log("Scanned Text:", text);
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err?.error?.message || 'API error ' + response.status);
-  }
+        // This finds Job numbers like DS-1810118 or AP-1792145
+        const woMatch = text.match(/([A-Z]{2,3}-\d{7})/i);
+        
+        const parsed = {
+            wo: woMatch ? woMatch[0].toUpperCase() : "",
+            pn: "", 
+            pname: "Manual verification required",
+            status: "Scanned Free"
+        };
 
-  const data = await response.json();
-  const text = data.content?.map(c => c.text || '').join('').trim();
+        if (!parsed.wo) {
+            throw new Error('Could not find Job #. Please make sure the barcode or Job number is clear.');
+        }
 
-  // Parse JSON from response
-  let parsed;
-  try {
-    const clean = text.replace(/```json|```/g,'').trim();
-    parsed = JSON.parse(clean);
-  } catch(e) {
-    throw new Error('Could not parse the W/O — please try a clearer photo');
-  }
+        scannedWOData = parsed;
+        document.getElementById('scanProgress').style.width = '100%';
+        setTimeout(() => showScanResults(parsed), 300);
 
-  if (!parsed.wo) throw new Error('Job # not found — make sure the top of the W/O paper is visible');
-
-  // Store and show results
-  scannedWOData = parsed;
-  document.getElementById('scanProgress').style.width = '100%';
-  setTimeout(() => showScanResults(parsed), 300);
+    } catch (e) {
+        showScanError('Free Scanner Error', e.message);
+    }
+}
 }
 
 function showScanResults(data) {
