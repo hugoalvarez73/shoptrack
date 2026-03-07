@@ -1,274 +1,3274 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#ffffff">
-    <title>ShopTrack — Universal Production System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.21.3/zxing.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ffffff">
+<title>ShopTrack — Universal Production System</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.21.3/zxing.min.js"></script>
+<style>
+:root {
+  --bg:#ffffff; --surface:#f4f6f8; --surface2:#e8ecf0; --border:#c8d0da;
+  --accent:#e67e00; --accent2:#1d6bc4; --green:#16a34a; --red:#dc2626;
+  --purple:#7c3aed; --cyan:#0891b2; --orange:#ea6c00;
+  --text:#111827; --muted:#4b5563;
+  --fh:'Barlow Condensed',sans-serif;
+  --fm:'JetBrains Mono',monospace;
+  --fb:'Barlow',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);display:flex;flex-direction:column}
 
-    <style>
-        :root {
-            --bg:#ffffff; --surface:#f4f6f8; --surface2:#e8ecf0; --border:#c8d0da;
-            --accent:#e67e00; --accent2:#1d6bc4; --green:#16a34a; --red:#dc2626;
-            --purple:#7c3aed; --cyan:#0891b2; --orange:#ea6c00;
-            --text:#111827; --muted:#4b5563;
-            --fh:'Barlow Condensed',sans-serif;
-            --fm:'JetBrains Mono',monospace;
-            --fb:'Barlow',sans-serif;
-        }
-        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        html,body{height:100%;overflow:hidden}
-        body{background:var(--bg);color:var(--text);font-family:var(--fb);display:flex;flex-direction:column}
+/* ── DEPT SELECT SCREEN ── */
+#deptScreen{
+  position:fixed;inset:0;background:#f4f6f8;z-index:2000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;overflow-y:auto;
+  background-image:radial-gradient(ellipse at 20% 50%, rgba(245,158,11,.06) 0%, transparent 60%),
+                   radial-gradient(ellipse at 80% 20%, rgba(59,130,246,.05) 0%, transparent 50%);
+}
+#deptScreen.hidden{display:none}
+.ds-logo{font-family:var(--fh);font-size:42px;font-weight:800;letter-spacing:4px;color:var(--accent);line-height:1}
+.ds-logo span{color:var(--text)}
+.ds-tagline{font-family:var(--fm);font-size:11px;color:var(--muted);letter-spacing:3px;margin:6px 0 32px;text-transform:uppercase}
+.ds-heading{font-family:var(--fh);font-size:16px;font-weight:600;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:16px}
+.dept-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:380px;margin-bottom:20px}
+.dept-btn{
+  background:#fff;border:2px solid var(--border);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);
+  padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.dept-btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s}
+.dept-btn:active{transform:scale(.96)}
+.dept-btn.selected{border-color:var(--accent)}
+.dept-icon{font-size:28px;margin-bottom:6px}
+.dept-label{font-family:var(--fh);font-size:16px;font-weight:700;letter-spacing:1px;color:#111827}
+.dept-count{font-family:var(--fm);font-size:10px;color:#6b7280;margin-top:3px}
 
-        /* DEPT SELECT SCREEN */
-        #deptScreen{
-            position:fixed;inset:0;background:#f4f6f8;z-index:2000;
-            display:flex;flex-direction:column;align-items:center;justify-content:center;
-            padding:20px;overflow-y:auto;
-            background-image:radial-gradient(ellipse at 20% 50%, rgba(245,158,11,.06) 0%, transparent 60%),
-                             radial-gradient(ellipse at 80% 20%, rgba(59,130,246,.05) 0%, transparent 50%);
-        }
-        #deptScreen.hidden{display:none}
-        .ds-logo{font-family:var(--fh);font-size:42px;font-weight:800;letter-spacing:4px;color:var(--accent);line-height:1}
-        .ds-logo span{color:var(--text)}
-        .ds-tagline{font-family:var(--fm);font-size:11px;color:var(--muted);letter-spacing:3px;margin:6px 0 32px;text-transform:uppercase}
-        .ds-heading{font-family:var(--fh);font-size:16px;font-weight:600;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:16px}
-        .dept-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:380px;margin-bottom:20px}
-        .dept-btn{
-            background:#fff;border:2px solid var(--border);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);
-            padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
-        }
-        .dept-btn:active{transform:scale(.96)}
-        .dept-btn.selected{border-color:var(--accent)}
-        .dept-icon{font-size:28px;margin-bottom:6px}
-        .dept-label{font-family:var(--fh);font-size:16px;font-weight:700;letter-spacing:1px;color:#111827}
-        .dept-count{font-family:var(--fm);font-size:10px;color:#6b7280;margin-top:3px}
+/* dept color theming */
+.dept-btn[data-dept="Machining"]{--dc:var(--accent2)}
+.dept-btn[data-dept="Fiber"]{--dc:var(--yellow,#fbbf24)}
+.dept-btn[data-dept="Structure Form"]{--dc:var(--green)}
+.dept-btn[data-dept="Blow Mold"]{--dc:var(--purple)}
+.dept-btn[data-dept="Metals"]{--dc:var(--cyan)}
+.dept-btn[data-dept="SMC"]{--dc:var(--orange)}
+.dept-btn[data-dept="MANAGER"]{--dc:var(--accent)}
+.dept-btn:hover,.dept-btn.selected{border-color:var(--dc,var(--accent));box-shadow:0 0 20px -5px var(--dc,var(--accent))}
+.dept-btn .dept-icon{filter:drop-shadow(0 0 8px var(--dc,#fff))}
 
-        /* Dept Colors */
-        .dept-btn[data-dept="Machining"]{--dc:var(--accent2)}
-        .dept-btn[data-dept="Fiber"]{--dc:var(--yellow,#fbbf24)}
-        .dept-btn[data-dept="Structure Form"]{--dc:var(--green)}
-        .dept-btn[data-dept="Blow Mold"]{--dc:var(--purple)}
-        .dept-btn[data-dept="Metals"]{--dc:var(--cyan)}
-        .dept-btn[data-dept="SMC"]{--dc:var(--orange)}
-        .dept-btn[data-dept="MANAGER"]{--dc:var(--accent)}
-        .dept-btn:hover,.dept-btn.selected{border-color:var(--dc,var(--accent));box-shadow:0 0 20px -5px var(--dc,var(--accent))}
+.manager-btn{grid-column:1/-1;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(59,130,246,.05));border-color:rgba(245,158,11,.4)}
 
-        .manager-btn{grid-column:1/-1;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(59,130,246,.05));border-color:rgba(245,158,11,.4)}
-        .ds-pin input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:12px;font-family:var(--fm);font-size:16px;outline:none;text-align:center;margin-bottom:8px}
-        .btn-enter{width:100%;padding:14px;background:var(--accent);color:#000;border:none;border-radius:8px;font-family:var(--fh);font-size:18px;font-weight:700;cursor:pointer}
+.ds-pin{margin-top:4px;width:100%;max-width:380px}
+.ds-pin input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:12px;font-family:var(--fm);font-size:16px;color:var(--text);outline:none;text-align:center;letter-spacing:4px;margin-bottom:8px}
+.ds-pin input:focus{border-color:var(--accent)}
+.btn-enter{width:100%;padding:14px;background:var(--accent);color:#000;border:none;border-radius:8px;font-family:var(--fh);font-size:18px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s}
+.btn-enter:active{transform:scale(.97)}
 
-        /* MAIN APP UI */
-        #mainApp{display:none;flex-direction:column;height:100%}
-        .hdr{background:#fff;border-bottom:2px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-        .app-logo{font-family:var(--fh);font-size:20px;font-weight:800;color:var(--accent)}
-        .dept-chip{font-family:var(--fh);font-size:13px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid;cursor:pointer}
-        .tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);flex-shrink:0}
-        .tab{flex:1;padding:10px 4px;text-align:center;font-family:var(--fh);font-size:12px;font-weight:700;color:#6b7280;cursor:pointer;border-bottom:3px solid transparent}
-        .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-        .scroll-area{flex:1;overflow-y:auto}
-        .page{display:none;padding:14px}
-        .page.active{display:block}
-        .card{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
-        .card-title{font-family:var(--fh);font-size:14px;font-weight:700;letter-spacing:2px;margin-bottom:12px;text-transform:uppercase}
-        
-        /* Buttons & Forms */
-        input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid var(--border); margin-bottom: 10px; font-family: inherit; }
-        .btn { padding: 12px; border-radius: 8px; border: none; font-family: var(--fh); font-weight: 700; cursor: pointer; text-transform: uppercase; width: 100%; }
-        .btn-green { background: var(--green); color: #fff; }
-        .btn-accent { background: var(--accent); color: #000; }
+/* ── MAIN APP ── */
+#mainApp{display:none;flex-direction:column;height:100%}
 
-        /* Scanner Modal */
-        #scannerModal { position: fixed; inset: 0; background: #fff; z-index: 9000; display: none; flex-direction: column; }
-        .scan-header { background: #1e3a5f; color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .scan-body { padding: 20px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        
-        .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 16px;border-radius:8px;display:none;z-index:10000}
-    </style>
+/* HEADER */
+.hdr{background:#fff;border-bottom:2px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.app-logo{font-family:var(--fh);font-size:20px;font-weight:800;letter-spacing:2px;color:var(--accent)}
+.app-logo span{color:var(--text)}
+.dept-chip{font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:20px;border:1px solid;cursor:pointer}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end}
+.hdr-time{font-family:var(--fm);font-size:16px;color:var(--accent);line-height:1}
+.hdr-date{font-family:var(--fm);font-size:10px;color:var(--muted)}
+
+/* TABS */
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:60px;padding:10px 4px;text-align:center;font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.5px;color:#6b7280;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* SCROLL AREA */
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.page{display:none;padding:14px;padding-bottom:24px}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card-title{font-family:var(--fh);font-size:14px;font-weight:700;letter-spacing:2px;color:#374151;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.card-title::before{content:'';width:3px;height:13px;border-radius:2px;background:var(--dept-color, var(--accent));flex-shrink:0}
+
+/* FORMS */
+.fr{margin-bottom:11px}
+label{display:block;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#374151;text-transform:uppercase;margin-bottom:5px;font-family:var(--fh)}
+input,select,textarea{width:100%;background:#fff;border:1.5px solid #d1d5db;border-radius:8px;padding:11px 13px;font-family:var(--fb);font-size:15px;color:#111827;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--dept-color,var(--accent));box-shadow:0 0 0 3px color-mix(in srgb,var(--dept-color,var(--accent)) 15%,transparent)}
+select option{background:#fff;color:#111827}
+textarea{min-height:65px;resize:vertical}
+.fa{background:#f0f4f8!important;color:var(--dept-color,var(--accent))!important;font-family:var(--fm)!important;font-size:14px!important;font-weight:600!important}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 18px;border:none;border-radius:8px;font-family:var(--fh);font-size:15px;font-weight:700;letter-spacing:1.5px;cursor:pointer;transition:all .15s;width:100%;text-transform:uppercase}
+.btn:active{transform:scale(.97);opacity:.9}
+.btn-accent{background:var(--dept-color,var(--accent));color:#000}
+.btn-green{background:var(--green);color:#000}
+.btn-red{background:var(--red);color:#fff}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-sm{padding:7px 13px;font-size:12px;width:auto}
+.btn-xs{padding:4px 9px;font-size:11px;width:auto}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+
+/* SCAN */
+.scan-wrap{display:flex;gap:8px;align-items:stretch}
+.scan-inp{flex:1;background:#fff;border:2px solid var(--border);border-radius:10px;padding:14px 16px;font-family:var(--fm);font-size:18px;color:#111827;outline:none;transition:border-color .15s;letter-spacing:1px}
+.scan-inp:focus{border-color:var(--dept-color,var(--accent));border-width:2px}
+.scan-inp::placeholder{color:#9ca3af;font-size:13px;font-family:var(--fb);letter-spacing:0}
+.scan-btn-big{background:var(--dept-color,var(--accent));color:#fff;border:none;border-radius:10px;padding:0 24px;font-family:var(--fh);font-size:22px;font-weight:900;letter-spacing:2px;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:54px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.25);transition:all .15s}
+.scan-btn-big:active{transform:scale(.96)}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--fm)}
+.b-run{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.b-idle{background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db}
+.b-warn{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* TOOL GRID */
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.tc{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:9px 6px;text-align:center;cursor:pointer;transition:all .18s;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.tc.run{border-color:var(--green);background:rgba(16,185,129,.04)}
+.tc.checked{border-color:var(--dept-color,var(--accent));background:color-mix(in srgb,var(--dept-color,var(--accent)) 5%,transparent)}
+.tc:active{transform:scale(.94)}
+.tc-name{font-family:var(--fh);font-size:13px;font-weight:700;color:#111827;margin-bottom:2px}
+.tc-sub{font-family:var(--fm);font-size:9px;color:#6b7280}
+.tc.run .tc-sub{color:var(--green)}
+.tc-elapsed{font-family:var(--fm);font-size:10px;color:var(--dept-color,var(--accent));margin-top:3px}
+
+/* SESSION */
+.sess-banner{background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(6,182,212,.04));border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:13px;margin-bottom:12px}
+.sess-timer{font-family:var(--fm);font-size:30px;font-weight:500;color:var(--green);letter-spacing:2px}
+.sess-lbl{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;font-family:var(--fh)}
+
+/* PHOTOS */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
+.pthumb{aspect-ratio:1;border-radius:6px;overflow:hidden;border:1px solid var(--border);position:relative;cursor:pointer}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.pdel{position:absolute;top:2px;right:2px;background:var(--red);color:#fff;border:none;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.padd{aspect-ratio:1;border-radius:6px;border:1.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:20px;transition:all .15s}
+.padd:active{border-color:var(--dept-color,var(--accent));color:var(--dept-color,var(--accent))}
+.padd span{font-size:9px;margin-top:2px;font-family:var(--fm)}
+
+/* RECORDS */
+.rec-item{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.rec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.rec-wo{font-family:var(--fm);font-size:13px;color:var(--dept-color,var(--accent));font-weight:500}
+.rec-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;font-size:11px;color:#6b7280;font-family:var(--fm)}
+.rec-meta b{color:#111827}
+.rec-photos{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap}
+.rec-photos img{width:40px;height:40px;border-radius:4px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
+
+/* ── MANAGER DASHBOARD ── */
+.mgr-dept-card{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.mgr-dept-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.mgr-dept-name{font-family:var(--fh);font-size:18px;font-weight:800;letter-spacing:1px;color:#111827;margin-bottom:8px}
+.mgr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.mgr-stat{background:#f4f6f8;border-radius:7px;padding:8px 6px;text-align:center}
+.mgr-stat-val{font-family:var(--fh);font-size:22px;font-weight:800;line-height:1}
+.mgr-stat-lbl{font-family:var(--fm);font-size:9px;color:var(--muted);margin-top:2px}
+.mgr-tools-mini{display:flex;flex-wrap:wrap;gap:4px}
+.mini-tool{font-family:var(--fm);font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid var(--border);background:var(--bg)}
+.mini-tool.run{border-color:var(--green);color:var(--green);background:rgba(16,185,129,.08)}
+
+/* FILTER */
+.frow{display:flex;gap:7px;overflow-x:auto;margin-bottom:11px;scrollbar-width:none;padding-bottom:2px}
+.frow::-webkit-scrollbar{display:none}
+.fchip{font-family:var(--fm);font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s}
+.fchip.on{border-color:var(--dept-color,var(--accent));color:var(--dept-color,var(--accent));background:color-mix(in srgb,var(--dept-color,var(--accent)) 12%,transparent)}
+
+/* MISC */
+.divider{height:1px;background:var(--border);margin:12px 0}
+.fiber-note{background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.2);border-radius:7px;padding:9px 11px;font-size:11px;color:#fbbf24;margin-bottom:9px;font-family:var(--fm)}
+.empty{text-align:center;padding:28px 0;color:var(--muted);font-family:var(--fm);font-size:11px}
+.empty .ei{font-size:32px;margin-bottom:7px}
+.prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:7px}
+.prog-fill{height:100%;border-radius:2px;transition:width .3s;background:var(--dept-color,var(--accent))}
+.sync-row{display:flex;align-items:center;gap:5px;font-family:var(--fm);font-size:10px;margin-top:5px}
+.sok{color:var(--green)}.serr{color:var(--red)}.spend{color:#fbbf24}
+
+/* TOAST */
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 18px;font-family:var(--fm);font-size:12px;color:var(--text);z-index:9999;transition:transform .25s;white-space:nowrap;max-width:88vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+.toast.inf{border-color:var(--accent);color:var(--accent)}
+
+@keyframes scanMove{0%,100%{top:10%}50%{top:85%}}
+/* QC SIMPLIFIED STYLES */
+.qc-big-btn{border:2px solid var(--border);border-radius:10px;padding:16px 8px;text-align:center;cursor:pointer;font-family:var(--fh);font-size:18px;font-weight:800;letter-spacing:1px;color:var(--muted);background:var(--bg);transition:all .18s}
+.qc-big-btn:active{transform:scale(.95)}
+.qc-big-pass.selected{background:rgba(16,185,129,.12);border-color:var(--green);color:var(--green)}
+.qc-big-issue.selected{background:rgba(239,68,68,.12);border-color:var(--red);color:var(--red)}
+.issue-chk{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--bg);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px;color:var(--text);transition:all .15s;font-family:var(--fb)}
+.issue-chk:has(input:checked){background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.5);color:var(--red)}
+.issue-chk input{width:16px;height:16px;accent-color:var(--red);flex-shrink:0}
+.qc-round-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px;margin-bottom:7px}
+.qc-round-item.good{border-left:4px solid var(--green)}
+.qc-round-item.issue{border-left:4px solid var(--red)}
+.qc-round-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.qc-round-wo{font-family:var(--fm);font-size:13px;color:#ec4899;font-weight:500}
+.qc-round-meta{font-family:var(--fm);font-size:10px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.qc-round-meta span b{color:var(--text)}
+.issue-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.issue-tag{font-family:var(--fm);font-size:9px;padding:3px 8px;border-radius:4px;background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+/* MISMATCH */
+.mismatch-banner{background:linear-gradient(135deg,#7f1d1d,#450a0a);border:2px solid #ef4444;border-radius:10px;padding:16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px}
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
+.qc-result-btn{padding:14px;border-radius:8px;font-family:var(--fh);font-size:15px;font-weight:700;letter-spacing:1px;text-align:center;cursor:pointer;border:2px solid var(--border);background:var(--bg);color:var(--muted);transition:all .15s}
+
+
+.photo-cat{border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:8px;transition:border-color .2s}
+.photo-cat:hover{border-color:var(--cat,var(--accent))}
+.photo-cat-hdr{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer;background:var(--bg);transition:background .15s}
+.photo-cat-hdr:active{background:var(--surface2)}
+.photo-cat-icon{font-size:22px;flex-shrink:0}
+.photo-cat-title{font-family:var(--fh);font-size:15px;font-weight:700;color:var(--text);letter-spacing:.5px}
+.photo-cat-sub{font-family:var(--fm);font-size:9px;color:var(--muted);margin-top:1px}
+.photo-cat-count{margin-left:auto;min-width:24px;height:24px;border-radius:12px;background:var(--cat,var(--accent));color:#000;font-family:var(--fh);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0;transition:opacity .2s}
+.photo-cat-count.has-photos{opacity:1}
+.photo-cat-body{padding:10px;background:var(--surface);border-top:1px solid var(--border)}
+
+/* PRINT */
+@media print{
+  .tabs,.hdr,.btn,.scan-wrap,.sync-row,#toolAssignBlock,.sess-banner,#savingBar,#deptScreen{display:none!important}
+  body,html{overflow:auto!important;height:auto!important;background:#fff!important;color:#000!important}
+  .scroll-area{overflow:visible!important;height:auto!important}
+  .card{border:1px solid #ccc!important;break-inside:avoid;margin-bottom:10px}
+  .card-title,.photo-cat-title{color:#222!important}
+  .fa{color:#000!important;background:#f0f0f0!important;border-color:#ccc!important}
+  .photo-cat{border:1px solid #ccc!important}
+  .photo-cat-body{display:block!important}
+  .photo-cat-hdr{background:#f9f9f9!important}
+  .pgrid img{width:90px!important;height:90px!important}
+  .print-report-hdr{display:block!important}
+  label{color:#555!important}
+}
+.print-report-hdr{display:none;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:14px}
+.print-report-hdr h2{font-size:18px;font-weight:bold;margin-bottom:4px}
+.print-report-hdr p{font-size:11px;color:#555}
+
+.iov img{max-width:95vw;max-height:78vh;border-radius:8px}
+.iov .cls{margin-top:14px;font-family:var(--fm);color:var(--muted);cursor:pointer;font-size:12px}
+
+/* MODAL */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:5000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.mov.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border-radius:14px 14px 0 0;width:100%;max-width:480px;padding:18px 14px 28px;transform:translateY(100%);transition:transform .28s;max-height:88vh;overflow-y:auto}
+.mov.open .modal{transform:translateY(0)}
+.mhandle{width:32px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+.mtitle{font-family:var(--fh);font-size:20px;font-weight:800;letter-spacing:1px;margin-bottom:14px;color:var(--dept-color,var(--accent))}
+
+/* Progress saving */
+#savingBar{display:none;margin-top:9px}
+</style>
 </head>
 <body>
 
-    <div id="deptScreen">
-        <div class="ds-logo">SHOP<span>TRACK</span></div>
-        <div class="ds-tagline">Universal Production System</div>
-        <div class="ds-heading">Select Your Department</div>
-        <div class="dept-grid" id="deptGrid"></div>
-        <div class="ds-pin" id="pinArea" style="display:none">
-            <input type="password" id="pinInput" maxlength="4" placeholder="Manager PIN">
-            <button class="btn-enter" onclick="enterDept()">ENTER →</button>
+<!-- ══════════════════════════════════════════
+     DEPARTMENT SELECT SCREEN
+══════════════════════════════════════════ -->
+<div id="deptScreen">
+  <div class="ds-logo">SHOP<span>TRACK</span></div>
+  <div class="ds-tagline">Universal Production System</div>
+  <div class="ds-heading">Select Your Department</div>
+
+  <div class="dept-grid" id="deptGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <div class="ds-pin" id="pinArea" style="display:none">
+    <input type="password" id="pinInput" maxlength="4" placeholder="Manager PIN" inputmode="numeric" autocomplete="off">
+    <button class="btn-enter" onclick="enterDept()">ENTER →</button>
+  </div>
+  <div id="noPinArea" style="display:none;width:100%;max-width:380px">
+    <button class="btn-enter" onclick="enterDept()">ENTER DEPARTMENT →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════ -->
+<div id="mainApp">
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="app-logo">SHOP<span>TRACK</span></div>
+      <div class="dept-chip" id="deptChip" onclick="changeDept()" title="Tap to change department">—</div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-time" id="hdrTime">--:--:--</div>
+      <div class="hdr-date" id="hdrDate"></div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabBar"><!-- filled by JS --></div>
+
+  <div class="scroll-area">
+
+    <!-- ── SCAN / LOG TAB ── -->
+    <div class="page" id="tab-scan">
+      <div class="card">
+        <div class="card-title">📋 Scan Work Order</div>
+
+        <!-- BIG SCAN AREA -->
+        <div style="background:linear-gradient(135deg,rgba(var(--dept-rgb,245,158,11),.08),rgba(var(--dept-rgb,245,158,11),.03));border:2px dashed var(--dept-color,var(--accent));border-radius:14px;padding:20px 16px;margin-bottom:12px;text-align:center">
+          <div style="font-size:48px;margin-bottom:8px">📷</div>
+          <div style="font-family:var(--fh);font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">Point camera at W/O barcode</div>
+          <div style="font-family:var(--fb);font-size:12px;color:var(--muted);margin-bottom:16px">Scan the barcode at the top of your Work Order paper</div>
+          <div class="scan-wrap" style="margin-bottom:12px">
+            <input class="scan-inp" id="scanInput" type="text"
+              placeholder="Tap here then scan barcode…"
+              inputmode="text" autocomplete="off"
+              style="font-size:16px;text-align:center"
+              onfocus="this.placeholder=''"
+              onblur="this.placeholder='Tap here then scan barcode…'">
+          </div>
+          <button id="mainScanBtn"
+            style="width:100%;background:var(--dept-color,var(--accent));color:#fff;border:none;border-radius:12px;padding:18px;font-family:var(--fh);font-size:28px;font-weight:900;letter-spacing:3px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;gap:12px;-webkit-tap-highlight-color:transparent">
+            <span style="font-size:32px">📷</span> SCAN W/O
+          </button>
         </div>
-        <div id="noPinArea" style="display:none;width:100%;max-width:380px">
-            <button class="btn-enter" onclick="enterDept()">ENTER DEPARTMENT →</button>
+
+        <div style="text-align:center;font-family:var(--fb);font-size:12px;color:var(--muted);margin-bottom:8px">— or type W/O number manually above then tap SCAN W/O —</div>
+        <div class="sync-row" id="cloudRow"><span class="spend">●</span><span id="cloudTxt">Not connected to SharePoint</span></div>
+      </div>
+
+      <div id="woBlock" style="display:none">
+
+        <!-- WO FOUND banner -->
+        <div id="woFoundBanner" style="display:none;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(6,182,212,.05));border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:22px">✅</span>
+          <div>
+            <div style="font-family:var(--fh);font-size:15px;font-weight:700;color:var(--green)">Work Order Found in SharePoint</div>
+            <div style="font-family:var(--fm);font-size:10px;color:var(--muted)" id="woFoundSub">—</div>
+          </div>
         </div>
+        <div id="woNotFoundBanner" style="display:none;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:11px 14px;margin-bottom:12px">
+          <div style="font-family:var(--fh);font-size:14px;font-weight:700;color:var(--accent)">⚠️ W/O not in database — fill in manually</div>
+          <div style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-top:3px">Data will still be saved locally and to cloud</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Work Order Info</div>
+
+          <!-- Row 1: Job # + Spec Rev -->
+          <div class="row2">
+            <div class="fr">
+              <label>Job # (W/O)</label>
+              <input class="fa" id="f_wo" readonly>
+            </div>
+            <div class="fr">
+              <label>Spec / Draw Rev</label>
+              <input class="fa" id="f_specrev" readonly placeholder="e.g. D">
+            </div>
+          </div>
+
+          <!-- Row 2: Assy (P/N) + Part Name -->
+          <div class="row2">
+            <div class="fr">
+              <label>Assy / P/N</label>
+              <input class="fa" id="f_pn" readonly placeholder="—">
+            </div>
+            <div class="fr">
+              <label>Part Name</label>
+              <input class="fa" id="f_pname" readonly placeholder="—">
+            </div>
+          </div>
+
+          <!-- Row 3: Department Name + Op Seq -->
+          <div class="row2">
+            <div class="fr">
+              <label>Department</label>
+              <input class="fa" id="f_deptcode" readonly placeholder="e.g. Injection Mold">
+            </div>
+            <div class="fr">
+              <label>Op Seq</label>
+              <input class="fa" id="f_opseq" readonly placeholder="—">
+            </div>
+          </div>
+
+          <!-- Row 4: Sched Qty + UOM -->
+          <div class="row2">
+            <div class="fr">
+              <label>Sched Qty</label>
+              <input class="fa" id="f_qty" readonly placeholder="—">
+            </div>
+            <div class="fr">
+              <label>UOM</label>
+              <input class="fa" id="f_uom" readonly placeholder="—">
+            </div>
+          </div>
+
+          <!-- Row 5: Sched Start + Sched Done -->
+          <div class="row2">
+            <div class="fr">
+              <label>Sched Start</label>
+              <input class="fa" id="f_schedstart" readonly placeholder="—">
+            </div>
+            <div class="fr">
+              <label>Sched Done</label>
+              <input class="fa" id="f_scheddone" readonly placeholder="—">
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Operator — manual entry -->
+          <div class="fr">
+            <label>Operator Name</label>
+            <input id="f_name" type="text" placeholder="Your name…" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Fiber check-in note -->
+        <div class="fiber-note" id="fiberNote" style="display:none">⚡ FIBER — Check work order and log your check-in time. No tool required.</div>
+
+        <!-- Tool assign -->
+        <div id="toolAssignBlock">
+          <div class="card">
+            <div class="card-title">Assign Tool / Machine</div>
+            <div class="fr"><label>Select Tool</label>
+              <select id="f_tool"><option value="">-- Pick a tool --</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session running -->
+        <div class="sess-banner" id="sessBanner" style="display:none">
+          <div class="sess-lbl">⏱ RUNNING — <span id="sessToolLbl"></span></div>
+          <div class="sess-timer" id="sessTimer">00:00:00</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--fm);margin-top:3px">Started <span id="sessStartLbl"></span></div>
+        </div>
+
+        <!-- PHOTO CAPTURE SECTION -->
+        <div class="card">
+          <div class="card-title">📸 Photo Documentation</div>
+          <p style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-bottom:12px">Tap any category to open camera. All photos saved to SharePoint under this W/O.</p>
+
+          <!-- 1. Good Parts / First Article -->
+          <div class="photo-cat" style="--cat:#10b981">
+            <div class="photo-cat-hdr" onclick="toggleCat('cat-good')">
+              <div class="photo-cat-icon">✅</div>
+              <div>
+                <div class="photo-cat-title">Good Parts / First Article</div>
+                <div class="photo-cat-sub">Approved samples, first-run confirmation</div>
+              </div>
+              <div class="photo-cat-count" id="cnt-good">0</div>
+            </div>
+            <div class="photo-cat-body" id="cat-good" style="display:none">
+              <div class="pgrid" id="pg-good">
+                <div class="padd" onclick="addPhoto('good')"><span>+</span><span>GOOD PART</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Bad / Defective Parts -->
+          <div class="photo-cat" style="--cat:#ef4444">
+            <div class="photo-cat-hdr" onclick="toggleCat('cat-bad')">
+              <div class="photo-cat-icon">❌</div>
+              <div>
+                <div class="photo-cat-title">Bad / Defective Parts</div>
+                <div class="photo-cat-sub">Quality failures, rejected parts</div>
+              </div>
+              <div class="photo-cat-count" id="cnt-bad">0</div>
+            </div>
+            <div class="photo-cat-body" id="cat-bad" style="display:none">
+              <div class="pgrid" id="pg-bad">
+                <div class="padd" onclick="addPhoto('bad')"><span>+</span><span>BAD PART</span></div>
+              </div>
+              <div class="fr" style="margin-top:10px">
+                <label>Defect Description</label>
+                <textarea id="f_defect" placeholder="Describe the defect — what's wrong, where, how many…"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Damaged Parts -->
+          <div class="photo-cat" style="--cat:#f97316">
+            <div class="photo-cat-hdr" onclick="toggleCat('cat-damaged')">
+              <div class="photo-cat-icon">🔨</div>
+              <div>
+                <div class="photo-cat-title">Damaged Parts</div>
+                <div class="photo-cat-sub">Handling damage, cracks, breaks</div>
+              </div>
+              <div class="photo-cat-count" id="cnt-damaged">0</div>
+            </div>
+            <div class="photo-cat-body" id="cat-damaged" style="display:none">
+              <div class="pgrid" id="pg-damaged">
+                <div class="padd" onclick="addPhoto('damaged')"><span>+</span><span>DAMAGED</span></div>
+              </div>
+              <div class="fr" style="margin-top:10px">
+                <label>Damage Description</label>
+                <textarea id="f_damaged" placeholder="How was it damaged, where did it happen…"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Labels / Tags -->
+          <div class="photo-cat" style="--cat:#8b5cf6">
+            <div class="photo-cat-hdr" onclick="toggleCat('cat-label')">
+              <div class="photo-cat-icon">🏷️</div>
+              <div>
+                <div class="photo-cat-title">Labels / Tags</div>
+                <div class="photo-cat-sub">Part labels, barcodes, routing tags</div>
+              </div>
+              <div class="photo-cat-count" id="cnt-label">0</div>
+            </div>
+            <div class="photo-cat-body" id="cat-label" style="display:none">
+              <div class="pgrid" id="pg-label">
+                <div class="padd" onclick="addPhoto('label')"><span>+</span><span>LABEL/TAG</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Setup / Machine -->
+          <div class="photo-cat" style="--cat:#06b6d4">
+            <div class="photo-cat-hdr" onclick="toggleCat('cat-setup')">
+              <div class="photo-cat-icon">⚙️</div>
+              <div>
+                <div class="photo-cat-title">Setup / Machine</div>
+                <div class="photo-cat-sub">Machine settings, tooling, setup shots</div>
+              </div>
+              <div class="photo-cat-count" id="cnt-setup">0</div>
+            </div>
+            <div class="photo-cat-body" id="cat-setup" style="display:none">
+              <div class="pgrid" id="pg-setup">
+                <div class="padd" onclick="addPhoto('setup')"><span>+</span><span>SETUP</span></div>
+              </div>
+              <div class="fr" style="margin-top:10px">
+                <label>Setup Notes</label>
+                <textarea id="f_setup" placeholder="Machine settings, parameters, notes…"></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /photo card -->
+
+        <div class="fr"><label>General Notes</label><textarea id="f_notes" placeholder="Any additional notes for this job…"></textarea></div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-green" id="startBtn" onclick="startSession()">▶ START / CHECK IN</button>
+          <button class="btn btn-red" id="stopBtn" onclick="stopSession()" style="display:none">⏹ STOP &amp; SAVE</button>
+        </div>
+        <div id="savingBar"><div style="font-family:var(--fm);font-size:10px;color:var(--dept-color,var(--accent))">Saving to cloud…</div><div class="prog-bar"><div class="prog-fill" id="pFill" style="width:0%"></div></div></div>
+      </div>
     </div>
 
-    <div id="mainApp">
-        <div class="hdr">
-            <div class="app-logo">SHOP<span>TRACK</span></div>
-            <div class="dept-chip" id="deptChip" onclick="changeDept()">—</div>
-            <div id="hdrTime" style="font-family:monospace">00:00:00</div>
+    <!-- ── TOOLS TAB ── -->
+    <div class="page" id="tab-tools">
+      <div class="card">
+        <div class="card-title">Tools &amp; Machines</div>
+        <div class="frow" id="toolFilterRow">
+          <div class="fchip on" onclick="setToolFilter('all',this)">All</div>
+          <div class="fchip" onclick="setToolFilter('run',this)">Running</div>
+          <div class="fchip" onclick="setToolFilter('idle',this)">Idle</div>
         </div>
-        <div class="tabs" id="tabBar"></div>
-        <div class="scroll-area">
-            <div class="page active" id="tab-scan">
-                <div class="card">
-                    <div class="card-title">📋 Scan Work Order</div>
-                    <button class="btn btn-accent" style="font-size:24px; padding:20px" onclick="openScanner()">📷 OPEN FREE SCANNER</button>
-                    <input type="text" id="scanInput" placeholder="Or type Job # here..." style="margin-top:15px; text-align:center">
-                </div>
-                <div id="woBlock" style="display:none">
-                    <div class="card">
-                        <div class="card-title">Job Info</div>
-                        <label>Job #</label><input id="f_wo" readonly>
-                        <label>Part Number</label><input id="f_pn">
-                        <label>Description</label><input id="f_pname">
-                        <label>Operator</label><input id="f_name" placeholder="Enter your name">
-                        <button class="btn btn-green" onclick="startSession()">▶ START JOB</button>
-                    </div>
-                </div>
-            </div>
-            </div>
+        <div class="tgrid" id="toolGrid"></div>
+      </div>
     </div>
 
-    <div id="scannerModal">
-        <div class="scan-header">
-            <div style="font-weight:800">FREE PHOTO SCANNER</div>
-            <button onclick="closeScanner()" style="background:none; border:none; color:#fff; font-size:20px">✕</button>
+    <!-- ── QC CHECKS TAB ── -->
+    <div class="page" id="tab-qc">
+
+      <!-- Inspector + Shift header — stays at top all shift -->
+      <div class="card" style="background:linear-gradient(135deg,rgba(236,72,153,.08),rgba(139,92,246,.04));border-color:rgba(236,72,153,.3)">
+        <div class="card-title" style="color:#ec4899">👤 Inspector on Duty</div>
+        <div class="row2">
+          <div class="fr">
+            <label>Inspector Name</label>
+            <input id="qc_auditor" type="text" placeholder="Your name…" autocomplete="off">
+          </div>
+          <div class="fr">
+            <label>Shift</label>
+            <select id="qc_shift">
+              <option value="">Select…</option>
+              <option>1st Shift</option>
+              <option>2nd Shift</option>
+              <option>3rd Shift</option>
+            </select>
+          </div>
         </div>
-        <div class="scan-body" id="scanState_ready">
-            <div style="font-size:50px">📸</div>
-            <h3>Take a Photo of the Job Card</h3>
-            <p>Make sure the Job # or Barcode is clear</p>
-            <input type="file" id="woPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleWOPhoto(event)">
-            <button class="btn btn-accent" style="margin-top:20px" onclick="document.getElementById('woPhotoInput').click()">TAKE PHOTO</button>
-        </div>
-        <div class="scan-body" id="scanState_reading" style="display:none">
-            <div style="font-size:50px">🔍</div>
-            <h3 id="scanReadingMsg">Reading paper (FREE)...</h3>
-            <div style="width:80%; height:10px; background:#eee; border-radius:5px; margin-top:20px; overflow:hidden">
-                <div id="scanProgress" style="width:0%; height:100%; background:var(--accent); transition:0.3s"></div>
+        <!-- Round summary for this shift -->
+        <div id="qcShiftSummary" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            <div style="background:var(--bg);border-radius:7px;padding:8px;text-align:center">
+              <div style="font-family:var(--fh);font-size:24px;font-weight:800;color:#ec4899" id="qcTotalChecks">0</div>
+              <div style="font-family:var(--fm);font-size:9px;color:var(--muted)">CHECKS DONE</div>
             </div>
+            <div style="background:var(--bg);border-radius:7px;padding:8px;text-align:center">
+              <div style="font-family:var(--fh);font-size:24px;font-weight:800;color:var(--green)" id="qcTotalPass">0</div>
+              <div style="font-family:var(--fm);font-size:9px;color:var(--muted)">GOOD</div>
+            </div>
+            <div style="background:var(--bg);border-radius:7px;padding:8px;text-align:center">
+              <div style="font-family:var(--fh);font-size:24px;font-weight:800;color:var(--red)" id="qcTotalIssues">0</div>
+              <div style="font-family:var(--fm);font-size:9px;color:var(--muted)">ISSUES</div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- SCAN A TOOL CHECK -->
+      <div class="card">
+        <div class="card-title">🔍 Check a Tool</div>
+        <div class="fr">
+          <label>Tool / Machine</label>
+          <select id="qc_tool_sel">
+            <option value="">-- Select Tool --</option>
+          </select>
+        </div>
+        <div class="fr">
+          <label>Scan W/O at This Tool</label>
+          <div class="scan-wrap" style="margin-bottom:10px">
+            <input class="scan-inp" id="qc_scan" type="text"
+              placeholder="Tap here then scan barcode…"
+              inputmode="text" autocomplete="off"
+              style="text-align:center">
+          </div>
+          <button id="qcScanBtn"
+            style="width:100%;background:#ec4899;color:#fff;border:none;border-radius:12px;padding:16px;font-family:var(--fh);font-size:24px;font-weight:900;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 14px rgba(236,72,153,.35);display:flex;align-items:center;justify-content:center;gap:10px;-webkit-tap-highlight-color:transparent">
+            <span style="font-size:28px">📷</span> SCAN W/O
+          </button>
+        </div>
+      </div>
+
+      <!-- W/O INFO — shown after scan -->
+      <div id="qcWOBlock" style="display:none">
+
+        <!-- What the W/O says -->
+        <div class="card" style="border-color:rgba(16,185,129,.25)">
+          <div class="card-title" style="color:var(--green)">📋 W/O Info</div>
+          <div class="row2">
+            <div class="fr"><label>Job # / W/O</label><input class="fa" id="qc_wo" readonly></div>
+            <div class="fr"><label>P/N</label><input class="fa" id="qc_pn" readonly></div>
+          </div>
+          <div class="fr"><label>Part Name</label><input class="fa" id="qc_pname" readonly></div>
+        </div>
+
+        <!-- PASS or ISSUE — big simple buttons -->
+        <div class="card">
+          <div class="card-title">🏁 Result at This Tool</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div id="qbtn-pass" class="qc-big-btn qc-big-pass" onclick="setQCResult('PASS')">
+              <div style="font-size:32px">✅</div>
+              <div>GOOD</div>
+              <div style="font-size:10px;opacity:.7">Parts look good</div>
+            </div>
+            <div id="qbtn-issue" class="qc-big-btn qc-big-issue" onclick="setQCResult('ISSUE')">
+              <div style="font-size:32px">🚨</div>
+              <div>ISSUE</div>
+              <div style="font-size:10px;opacity:.7">Problem found</div>
+            </div>
+          </div>
+
+          <!-- Issue details — only shown when ISSUE selected -->
+          <div id="qcIssueBlock" style="display:none">
+            <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:12px;margin-bottom:10px">
+              <div style="font-family:var(--fh);font-size:14px;font-weight:700;color:var(--red);margin-bottom:8px">⚠️ What is the problem?</div>
+              <div style="display:flex;flex-direction:column;gap:6px" id="issueTypeList">
+                <label class="issue-chk"><input type="checkbox" value="P/N does not match W/O"> P/N does not match W/O</label>
+                <label class="issue-chk"><input type="checkbox" value="Part Name does not match"> Part Name does not match</label>
+                <label class="issue-chk"><input type="checkbox" value="Spec / Drawing Rev does not match"> Spec / Drawing Rev does not match</label>
+                <label class="issue-chk"><input type="checkbox" value="Bad parts coming out"> Bad parts coming out</label>
+                <label class="issue-chk"><input type="checkbox" value="Machine running wrong job"> Machine running wrong job</label>
+                <label class="issue-chk"><input type="checkbox" value="Other"> Other</label>
+              </div>
+            </div>
+            <div class="fr">
+              <label>Supervisor Notified</label>
+              <input id="qc_supervisor" type="text" placeholder="Supervisor name…">
+            </div>
+            <div class="fr">
+              <label>Action Taken / Notes</label>
+              <textarea id="qc_action" placeholder="What was done? Job stopped? Document updated?…" style="min-height:70px"></textarea>
+            </div>
+          </div>
+
+          <!-- Photos -->
+          <div class="fr">
+            <label>📸 Photos <span style="color:var(--muted);font-size:10px">(good part, bad part, label, setup)</span></label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px" id="pg-qccheck">
+              <div class="padd" onclick="addPhoto('qccheck')"><span>+</span><span>PHOTO</span></div>
+            </div>
+          </div>
+
+          <button class="btn" id="qcSaveBtn" onclick="saveQCCheck()"
+            style="background:#ec4899;color:#fff;margin-top:10px;font-size:16px;opacity:.4"
+            disabled>
+            💾 SAVE THIS CHECK
+          </button>
+        </div>
+      </div>
+
+      <!-- TODAY'S LOG for this inspector -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="card-title" style="margin:0">📋 My Checks This Shift</div>
+          <button class="btn btn-outline btn-xs" onclick="exportShiftReport()">🖨️ END SHIFT REPORT</button>
+        </div>
+        <div id="qcRoundLog">
+          <div class="empty"><div class="ei">🔍</div>No checks yet — start scanning tools!</div>
+        </div>
+      </div>
+
+    </div><!-- /tab-qc -->
+
+      <!-- SHIFT SELECTOR -->
+      <div class="card">
+        <div class="card-title">👤 QC Auditor Info</div>
+        <div class="row2">
+          <div class="fr">
+            <label>Auditor Name</label>
+            <input id="qc_auditor" type="text" placeholder="Your name…" autocomplete="off">
+          </div>
+          <div class="fr">
+            <label>Shift</label>
+            <select id="qc_shift">
+              <option value="">Select shift…</option>
+              <option>1st Shift</option>
+              <option>2nd Shift</option>
+              <option>3rd Shift</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCAN W/O AT TOOL -->
+      <div class="card">
+        <div class="card-title">🔍 Scan W/O at Tool</div>
+        <div class="fr">
+          <label>Select Tool / Machine</label>
+          <select id="qc_tool">
+            <option value="">-- Select Tool --</option>
+          </select>
+        </div>
+        <div class="scan-wrap" style="margin-bottom:8px">
+          <input class="scan-inp" id="qc_scan" type="text" placeholder="Scan W/O barcode at this tool…" inputmode="text">
+          <button class="btn btn-accent btn-sm" onclick="qcScanWO()" style="background:#ec4899;color:#fff">SCAN</button>
+        </div>
+        <p style="font-family:var(--fm);font-size:10px;color:var(--muted)">Scan the Job barcode on the W/O paper at the machine</p>
+      </div>
+
+      <!-- W/O INFO PULLED FROM SHAREPOINT -->
+      <div id="qcWOBlock" style="display:none">
+
+        <!-- What SharePoint says this job should be -->
+        <div class="card" style="border-color:rgba(16,185,129,.3)">
+          <div class="card-title" style="color:var(--green)">📋 W/O Says (From System)</div>
+          <div class="row2">
+            <div class="fr"><label>Job # / W/O</label><input class="fa" id="qc_wo" readonly></div>
+            <div class="fr"><label>Spec / Draw Rev</label><input class="fa" id="qc_specrev" readonly placeholder="—"></div>
+          </div>
+          <div class="row2">
+            <div class="fr"><label>Assy / P/N</label><input class="fa" id="qc_pn" readonly></div>
+            <div class="fr"><label>Part Name</label><input class="fa" id="qc_pname" readonly></div>
+          </div>
+          <div class="row2">
+            <div class="fr"><label>Department</label><input class="fa" id="qc_dept" readonly></div>
+            <div class="fr"><label>Sched Qty</label><input class="fa" id="qc_qty" readonly></div>
+          </div>
+        </div>
+
+        <!-- What QC actually sees at the machine -->
+        <div class="card" style="border-color:rgba(245,158,11,.3)">
+          <div class="card-title" style="color:var(--accent)">👁️ What I See at the Machine</div>
+          <p style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-bottom:10px">Fill in what is ACTUALLY running at this tool right now</p>
+          <div class="row2">
+            <div class="fr"><label>Actual P/N Running</label><input id="qca_pn" type="text" placeholder="Scan or type P/N…"></div>
+            <div class="fr"><label>Actual Spec Rev</label><input id="qca_specrev" type="text" placeholder="e.g. D, C, B…"></div>
+          </div>
+          <div class="fr"><label>Actual Part Name / Description</label><input id="qca_pname" type="text" placeholder="What part is actually being made…"></div>
+          <div class="fr">
+            <label>Part Quality</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+              <div id="qbtn-good" class="qc-result-btn" onclick="setPartQuality('GOOD')" style="border-color:var(--border)">✅ GOOD PARTS</div>
+              <div id="qbtn-bad" class="qc-result-btn" onclick="setPartQuality('BAD')" style="border-color:var(--border)">❌ BAD PARTS</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPARE button -->
+        <button class="btn" onclick="runMismatchCheck()" style="background:#ec4899;color:#fff;margin-bottom:12px;font-size:16px">
+          🔍 COMPARE &amp; CHECK FOR MISMATCHES
+        </button>
+
+        <!-- MISMATCH ALERT — shown if problems found -->
+        <div id="mismatchAlert" style="display:none" class="mismatch-banner">
+          <div style="font-size:28px">🚨</div>
+          <div style="flex:1">
+            <div style="font-family:var(--fh);font-size:20px;font-weight:800;letter-spacing:1px;color:#fff">MISMATCH FOUND!</div>
+            <div id="mismatchDetails" style="font-family:var(--fm);font-size:11px;color:rgba(255,255,255,.8);margin-top:4px;line-height:1.6"></div>
+          </div>
+        </div>
+
+        <!-- ALL CLEAR — shown if everything matches -->
+        <div id="allClearBanner" style="display:none;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.4);border-radius:10px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+          <div style="font-size:28px">✅</div>
+          <div>
+            <div style="font-family:var(--fh);font-size:18px;font-weight:800;color:var(--green)">ALL CLEAR — Everything Matches!</div>
+            <div style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-top:3px">P/N, Part Name and Spec Rev all match the W/O</div>
+          </div>
+        </div>
+
+        <!-- INCIDENT REPORT FORM — shown after mismatch -->
+        <div id="incidentForm" style="display:none">
+          <div class="card" style="border-color:rgba(239,68,68,.3)">
+            <div class="card-title" style="color:var(--red)">📝 Incident Report</div>
+
+            <div class="fr">
+              <label>Supervisor Notified</label>
+              <input id="inc_supervisor" type="text" placeholder="Supervisor name who was told…">
+            </div>
+
+            <div class="fr">
+              <label>What Was Wrong (check all that apply)</label>
+              <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px" id="mismatchCheckboxes"></div>
+            </div>
+
+            <div class="fr">
+              <label>Action Taken / Document Control Notes</label>
+              <textarea id="inc_action" placeholder="What was done to fix it? Any document control changes needed? Work order corrected? Job stopped?…" style="min-height:80px"></textarea>
+            </div>
+
+            <div class="fr">
+              <label>Additional Notes</label>
+              <textarea id="inc_notes" placeholder="Any other details…" style="min-height:50px"></textarea>
+            </div>
+
+            <!-- Photos for incident -->
+            <div class="fr">
+              <label>📸 Evidence Photos</label>
+              <p style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-bottom:7px">Photo the bad part, spec sheet, label — anything that proves the mismatch</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px" id="pg-incident">
+                <div class="padd" onclick="addPhoto('incident')"><span>+</span><span>EVIDENCE</span></div>
+              </div>
+            </div>
+
+            <button class="btn btn-red" onclick="saveIncident()" style="margin-top:8px;font-size:16px">
+              🚨 SAVE INCIDENT REPORT
+            </button>
+          </div>
+        </div>
+
+        <!-- GOOD CHECK FORM — shown after all clear -->
+        <div id="goodCheckForm" style="display:none">
+          <div class="card" style="border-color:rgba(16,185,129,.3)">
+            <div class="card-title" style="color:var(--green)">✅ Log Good Check</div>
+            <div class="fr">
+              <label>Notes (optional)</label>
+              <textarea id="gc_notes" placeholder="Any notes for this check…" style="min-height:50px"></textarea>
+            </div>
+            <div class="fr">
+              <label>📸 First Article / Good Part Photo (optional)</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px" id="pg-goodcheck">
+                <div class="padd" onclick="addPhoto('goodcheck')"><span>+</span><span>GOOD PART</span></div>
+              </div>
+            </div>
+            <button class="btn btn-success" onclick="saveGoodCheck()" style="margin-top:8px">✅ SAVE GOOD CHECK</button>
+          </div>
+        </div>
+
+      </div><!-- /qcWOBlock -->
+
+      <!-- TODAY'S AUDIT LOG -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="card-title" style="margin:0">📊 Shift Audit Log</div>
+          <button class="btn btn-outline btn-xs" onclick="printShiftReport()">🖨️ PRINT REPORT</button>
+        </div>
+        <div class="frow" id="qcLogFilter">
+          <div class="fchip on" onclick="setQCLogFilter('ALL',this)">All</div>
+          <div class="fchip" onclick="setQCLogFilter('MISMATCH',this)">🚨 Mismatches</div>
+          <div class="fchip" onclick="setQCLogFilter('GOOD',this)">✅ Good</div>
+        </div>
+        <div id="qcAuditLog"><div class="empty"><div class="ei">🔍</div>No checks logged yet</div></div>
+      </div>
+
+    </div><!-- /tab-qc -->
+    <div class="page" id="tab-defects">
+      <div class="card">
+        <div class="card-title">Log Defect</div>
+        <div class="fr"><label>W/O #</label><input id="d_wo" type="text" placeholder="Work Order #" inputmode="text"></div>
+        <div class="row2">
+          <div class="fr"><label>P/N</label><input id="d_pn" type="text"></div>
+          <div class="fr"><label>Part Name</label><input id="d_pname" type="text"></div>
+        </div>
+        <div class="fr"><label>Operator</label><input id="d_name" type="text" placeholder="Your name"></div>
+        <div class="fr"><label>Defect Type</label>
+          <select id="d_type">
+            <option value="">Select…</option>
+            <option>Dimensional</option><option>Surface Finish</option><option>Wrong Material</option>
+            <option>Missing Feature</option><option>Damaged</option><option>Wrong Quantity</option>
+            <option>Documentation Error</option><option>Other</option>
+          </select>
+        </div>
+        <div class="fr"><label>Description</label><textarea id="d_desc" placeholder="Describe the defect…"></textarea></div>
+        <div class="fr"><label>Photos</label>
+          <div class="pgrid" id="pg-defectOnly">
+            <div class="padd" onclick="addPhoto('defectOnly')"><span>+</span><span>PHOTO</span></div>
+          </div>
+        </div>
+        <button class="btn btn-accent" onclick="saveDefect()" style="margin-top:8px">⚠️ SUBMIT DEFECT</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Recent Defects</div>
+        <div id="defectsList"><div class="empty"><div class="ei">⚠️</div>None yet</div></div>
+      </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <!-- ── RECORDS TAB ── -->
+    <div class="page" id="tab-records">
+      <div class="card">
+        <div class="card-title">Production Logs</div>
+        <input type="text" id="recSearch" placeholder="Search W/O, operator, P/N…" oninput="renderRecords()" style="margin-bottom:10px">
+        <div id="recordsList"><div class="empty"><div class="ei">📋</div>No records yet</div></div>
+      </div>
+      <div class="row2">
+        <button class="btn btn-outline" onclick="exportCSV()">⬇️ EXPORT CSV</button>
+        <button class="btn btn-outline" onclick="syncCloud()">☁️ SYNC</button>
+      </div>
+    </div>
 
-    <script>
-        const DEPARTMENTS = [
-            { id:'InjectionMold', label:'Injection Mold', icon:'💉', color:'#3b82f6' },
-            { id:'Fiber', label:'Fiber', icon:'⚡', color:'#fbbf24' },
-            { id:'StructureMold', label:'Structure Mold', icon:'🏗️', color:'#10b981' },
-            { id:'BlowMold', label:'Blow Mold', icon:'💨', color:'#8b5cf6' },
-            { id:'MANAGER', label:'Manager View', icon:'📊', color:'#f59e0b', pin:'1234' }
-        ];
+    <!-- ── MANAGER DASHBOARD ── -->
+    <div class="page" id="tab-manager">
 
-        let activeDept = null;
-        let scannedWOData = null;
+      <!-- LIVE FLOOR SUMMARY -->
+      <div class="card" style="background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(59,130,246,.04));border-color:rgba(245,158,11,.3)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="card-title" style="margin:0;color:#b45309">🏭 Live Floor View</div>
+          <button class="btn btn-sm btn-outline" onclick="renderManager()" style="width:auto">↻ Refresh</button>
+        </div>
+        <div id="mgrSummary"></div>
+      </div>
 
-        function init() {
-            const grid = document.getElementById('deptGrid');
-            grid.innerHTML = DEPARTMENTS.map(d => `
-                <div class="dept-btn" data-dept="${d.id}" onclick="selectDept('${d.id}')">
-                    <div class="dept-icon">${d.icon}</div>
-                    <div class="dept-label">${d.label}</div>
-                </div>
-            `).join('');
-            
-            setInterval(() => {
-                document.getElementById('hdrTime').textContent = new Date().toLocaleTimeString();
-            }, 1000);
+      <!-- ── REPORTS SECTION ── -->
+      <div class="card" style="border-color:rgba(16,163,74,.3)">
+        <div class="card-title" style="color:#15803d">📊 Pull a Report</div>
+
+        <!-- Filters -->
+        <div class="row2" style="margin-bottom:10px">
+          <div class="fr" style="margin-bottom:0">
+            <label>Report Type</label>
+            <select id="rpt_type" onchange="updateReportUI()">
+              <option value="dept">By Department</option>
+              <option value="tool">By Tool (All 21 Tools)</option>
+              <option value="operator">By Operator / Worker</option>
+              <option value="qc">QC Checks &amp; Issues Only</option>
+            </select>
+          </div>
+          <div class="fr" style="margin-bottom:0">
+            <label>Time Period</label>
+            <select id="rpt_period">
+              <option value="today">Today (All Shifts)</option>
+              <option value="shift1">1st Shift Only</option>
+              <option value="shift2">2nd Shift Only</option>
+              <option value="shift3">3rd Shift Only</option>
+              <option value="week">This Week</option>
+              <option value="all">All Time</option>
+            </select>          </div>
+        </div>
+
+        <!-- Dept filter — shown for dept report -->
+        <div class="fr" id="rpt_dept_row">
+          <label>Department</label>
+          <select id="rpt_dept">
+            <option value="ALL">All Departments</option>
+          </select>
+        </div>
+
+        <!-- Operator filter — shown for operator report -->
+        <div class="fr" id="rpt_op_row" style="display:none">
+          <label>Operator Name (leave blank for all)</label>
+          <input id="rpt_operator" type="text" placeholder="Type operator name…">
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+          <button class="btn" onclick="generateReport('pdf')"
+            style="background:#dc2626;color:#fff;font-size:15px">
+            🖨️ PRINT PDF
+          </button>
+          <button class="btn" onclick="generateReport('csv')"
+            style="background:#16a34a;color:#fff;font-size:15px">
+            📊 EXPORT CSV
+          </button>
+        </div>
+        <button class="btn btn-outline" onclick="generateReport('screen')" style="margin-top:8px">
+          👁️ PREVIEW ON SCREEN
+        </button>
+      </div>
+
+      <!-- SCREEN PREVIEW — shown after Preview button -->
+      <div id="rpt_preview" style="display:none">
+        <div class="card" style="border-color:rgba(59,130,246,.3)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div class="card-title" style="margin:0;color:#1d4ed8">📋 Report Preview</div>
+            <button class="btn btn-sm btn-outline" onclick="document.getElementById('rpt_preview').style.display='none'" style="width:auto">✕ Close</button>
+          </div>
+          <div id="rpt_preview_content"></div>
+        </div>
+      </div>
+
+      <!-- ALL RECORDS -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="card-title" style="margin:0">📋 All Records</div>
+          <button class="btn btn-sm btn-outline" onclick="syncCloud()" style="width:auto">☁️ Sync</button>
+        </div>
+        <div class="frow" id="mgrDeptFilter">
+          <div class="fchip on" onclick="setMgrFilter('ALL',this)">All</div>
+        </div>
+        <div id="mgrRecordsList"></div>
+      </div>
+
+    </div><!-- /tab-manager -->
+
+    <!-- ── SETTINGS TAB ── -->
+    <div class="page" id="tab-settings">
+      <!-- AI PHOTO SCANNING API KEY -->
+      <div class="card" style="border:2px solid #f59e0b">
+        <div class="card-title">📷 AI Photo Scanning</div>
+        <div id="apiKeyStatus" style="font-size:12px;color:#6b7280;margin-bottom:8px">
+          ⚠️ API key required for photo scanning
+        </div>
+        <input id="apiKeyInput" type="password" placeholder="Paste Anthropic API key here"
+          style="width:100%;background:#f8f9fa;border:2px solid #d1d5db;border-radius:8px;padding:12px;font-size:13px;font-family:monospace;outline:none;margin-bottom:8px">
+        <button class="btn btn-accent" onclick="saveApiKey()">💾 SAVE API KEY</button>
+        <div style="font-size:10px;color:#9ca3af;margin-top:6px">Key is stored only on this device. Never shared.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Microsoft 365</div>
+        <div id="settingsStatus"></div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-top:9px">
+          <button class="btn btn-accent" onclick="signIn()">🔐 SIGN IN TO MICROSOFT</button>
+          <button class="btn btn-outline" onclick="signOut()">Sign Out</button>
+        </div>
+      </div>
+      <div class="card" id="toolMgmtCard">
+        <div class="card-title">Manage Tools</div>
+        <div id="toolMgmtList"></div>
+        <button class="btn btn-outline" onclick="addToolPrompt()" style="margin-top:8px">+ ADD TOOL</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Device Info</div>
+        <div style="font-family:var(--fm);font-size:11px;color:var(--muted);line-height:2.2">
+          Department: <b id="infodept" style="color:var(--text)">—</b><br>
+          Records: <b id="infoRec" style="color:var(--accent)">0</b> &nbsp;|&nbsp; Defects: <b id="infoDef" style="color:var(--red)">0</b>
+        </div>
+        <button class="btn btn-outline" onclick="changeDept()" style="margin-top:9px">🔄 Change Department</button>
+        <button class="btn btn-red" onclick="clearData()" style="margin-top:7px">🗑 Clear Local Data</button>
+      </div>
+    </div>
+
+  </div><!-- /scroll-area -->
+</div><!-- /mainApp -->
+
+<!-- AI W/O PHOTO SCANNER MODAL -->
+<div id="scannerModal" style="display:none;position:fixed;inset:0;background:#fff;z-index:9000;flex-direction:column;font-family:'Barlow',sans-serif">
+
+  <!-- Header -->
+  <div style="background:#1e3a5f;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#fff;letter-spacing:2px">📄 SCAN W/O PAPER</div>
+    <button onclick="closeScanner()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;font-weight:700;cursor:pointer">✕</button>
+  </div>
+
+  <!-- STATE 1: READY TO SCAN -->
+  <div id="scanState_ready" style="flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto">
+
+    <div style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:12px;padding:16px;text-align:center">
+      <div style="font-size:40px;margin-bottom:8px">📸</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#1e3a5f;margin-bottom:4px">Take a photo of the W/O paper</div>
+      <div style="font-size:13px;color:#3b82f6">AI will read all the information automatically</div>
+    </div>
+
+    <!-- Camera capture -->
+    <input type="file" id="woPhotoInput" accept="image/*" capture="environment"
+      style="display:none" onchange="handleWOPhoto(event)">
+
+    <button id="woPhotoBtn"
+      style="width:100%;background:#1e3a5f;color:#fff;border:none;border-radius:14px;padding:22px;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 16px rgba(30,58,95,.35);display:flex;align-items:center;justify-content:center;gap:12px">
+      <span style="font-size:34px">📷</span> TAKE PHOTO
+    </button>
+
+    <div style="text-align:center;color:#6b7280;font-size:12px">— or type manually below —</div>
+
+    <!-- Manual fallback -->
+    <div>
+      <label style="display:block;font-size:11px;font-weight:700;letter-spacing:2px;color:#374151;text-transform:uppercase;margin-bottom:6px">Type W/O Number</label>
+      <div style="display:flex;gap:8px">
+        <input id="scannerManualInput" type="text" placeholder="e.g. DS-1810118 or AP-1792145"
+          autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+          style="flex:1;background:#f8f9fa;border:2px solid #d1d5db;border-radius:10px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:18px;color:#111;outline:none;letter-spacing:2px"
+          oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter') confirmManualScan()">
+        <button onclick="confirmManualScan()"
+          style="background:#16a34a;color:#fff;border:none;border-radius:10px;padding:14px 20px;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;cursor:pointer;white-space:nowrap">
+          USE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATE 2: READING PHOTO (AI processing) -->
+  <div id="scanState_reading" style="display:none;flex:1;padding:30px 20px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center">
+    <div style="font-size:60px" id="scanSpinner">🔍</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:#1e3a5f">Reading W/O Paper…</div>
+    <div style="font-size:14px;color:#6b7280" id="scanReadingMsg">AI is extracting job information</div>
+    <div style="width:100%;background:#e5e7eb;border-radius:99px;height:6px;overflow:hidden">
+      <div id="scanProgress" style="height:100%;background:#3b82f6;border-radius:99px;width:0%;transition:width .4s ease"></div>
+    </div>
+    <!-- Photo preview -->
+    <img id="woPhotoPreview" style="max-width:100%;max-height:200px;border-radius:10px;border:2px solid #e5e7eb;object-fit:contain;display:none">
+  </div>
+
+  <!-- STATE 3: RESULTS -->
+  <div id="scanState_results" style="display:none;flex:1;overflow-y:auto;padding:16px">
+    <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:14px;margin-bottom:14px;text-align:center">
+      <div style="font-size:32px">✅</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#16a34a">W/O Read Successfully!</div>
+      <div style="font-size:12px;color:#15803d;margin-top:2px">Review the info below — edit anything if needed</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px" id="scanResultFields">
+      <!-- populated by JS -->
+    </div>
+
+    <button onclick="confirmScannedWO()"
+      style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:14px;padding:18px;font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;letter-spacing:2px;cursor:pointer;margin-top:16px;box-shadow:0 4px 14px rgba(22,163,74,.3)">
+      ✅ USE THIS INFO
+    </button>
+    <button onclick="resetScanner()"
+      style="width:100%;background:#fff;color:#374151;border:2px solid #d1d5db;border-radius:10px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;cursor:pointer;margin-top:8px">
+      🔄 Scan Again
+    </button>
+  </div>
+
+  <!-- STATE 4: ERROR -->
+  <div id="scanState_error" style="display:none;flex:1;padding:30px 20px;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center">
+    <div style="font-size:50px">⚠️</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#dc2626" id="scanErrorMsg">Could not read photo</div>
+    <div style="font-size:13px;color:#6b7280" id="scanErrorDetail">Please try again with better lighting</div>
+    <button onclick="resetScanner()"
+      style="width:100%;background:#1e3a5f;color:#fff;border:none;border-radius:12px;padding:16px;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;cursor:pointer">
+      🔄 Try Again
+    </button>
+    <button onclick="confirmManualScan()"
+      style="width:100%;background:#fff;color:#374151;border:2px solid #d1d5db;border-radius:10px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;cursor:pointer">
+      ⌨️ Type Manually Instead
+    </button>
+  </div>
+
+</div>
+
+<!-- TOOL MODAL -->
+<div class="mov" id="toolModal" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="modalTitle">Tool</div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- IMG PREVIEW -->
+<div class="iov" id="iov" onclick="this.style.display='none'">
+  <img id="iovImg" src=""><div class="cls">✕ Tap to close</div>
+</div>
+
+<input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DEPARTMENT CONFIG
+// ═══════════════════════════════════════════════════════
+const DEPARTMENTS = [
+  { id:'InjectionMold', label:'Injection Mold', icon:'💉', color:'#3b82f6',
+    tools:buildTools('InjectionMold',[
+      'Tool 1','Tool 2','Tool 3','Tool 4','Tool 5','Tool 6','Tool 7','Tool 8',
+      // 9 = Moving/Assembly space — skipped
+      'Tool 10','Tool 11','Tool 12','Tool 13',
+      // 14 = Tool storage space — skipped
+      'Tool 15','Tool 16','Tool 17','Tool 18','Tool 19','Tool 20','Tool 21',
+      // 22 = Assembly space — skipped
+      'Tool 23'
+    ]) },
+  { id:'Fiber', label:'Fiber', icon:'⚡', color:'#fbbf24',
+    tools:[], checkInOnly:true },
+  { id:'StructureMold', label:'Structure Mold', icon:'🏗️', color:'#10b981',
+    tools:buildTools('StructureMold',[
+      'Tool 1','Tool 2','Tool 3','Tool 4','Tool 5',
+      'Tool 6','Tool 7','Tool 8','Tool 9','Tool 10'
+    ]) },
+  { id:'BlowMold', label:'Blow Mold', icon:'💨', color:'#8b5cf6',
+    tools:buildTools('BlowMold',[
+      'Tool 1','Tool 2','Tool 3','Tool 4'
+    ]) },
+  { id:'Metals', label:'Metals', icon:'🔩', color:'#06b6d4',
+    tools:buildTools('Metals',['Tool 1','Tool 2','Tool 3','Tool 4','Tool 5']) },
+  { id:'SMC', label:'SMC', icon:'🏭', color:'#f97316',
+    tools:buildTools('SMC',['Tool 1','Tool 2','Tool 3','Tool 4','Tool 5','Tool 6','Tool 7','Tool 8']) },
+  { id:'QC', label:'Quality Control', icon:'🔍', color:'#ec4899',
+    tools:[], isQC:true },
+  { id:'MANAGER', label:'Manager View', icon:'📊', color:'#f59e0b', isManager:true, pin:'1234' },
+];
+
+function buildTools(dept, names) {
+  return names.map((n,i) => ({ id: dept+'_'+i, name:n, dept, status:'idle', currentWO:'', currentOp:'', startTime:null }));
+}
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let activeDept = null;          // current DEPARTMENTS object
+let tools = [];                 // current dept's tools
+let allTools = {};              // all depts tools, keyed by dept id
+let records = [];
+let defects = [];
+let woDb = {};
+let currentSession = null;
+let sessInterval = null;
+let photos = { firstArticle:[], defect:[], defectOnly:[] };
+let currentPhotoCtx = null;
+let toolFilter = 'all';
+let mgrFilter = 'ALL';
+let msalInstance = null, currentAccount = null, graphToken = null;
+let config = JSON.parse(localStorage.getItem('st_config') || '{}');
+
+// Load persisted tools (preserve run status across refreshes)
+function loadAllTools() {
+  const saved = JSON.parse(localStorage.getItem('st_alltools') || 'null');
+  DEPARTMENTS.forEach(d => {
+    if (d.isManager) return;
+    allTools[d.id] = (saved && saved[d.id]) ? saved[d.id] : JSON.parse(JSON.stringify(d.tools));
+  });
+}
+function saveAllTools() { localStorage.setItem('st_alltools', JSON.stringify(allTools)); }
+
+function loadRecords() { records = JSON.parse(localStorage.getItem('st_records') || '[]'); }
+function saveRecords() { localStorage.setItem('st_records', JSON.stringify(records)); }
+function loadDefects() { defects = JSON.parse(localStorage.getItem('st_defects') || '[]'); }
+function saveDefects() { localStorage.setItem('st_defects', JSON.stringify(defects)); }
+
+// ═══════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════
+function tick() {
+  const n = new Date();
+  const te = document.getElementById('hdrTime'); if(te) te.textContent = n.toLocaleTimeString('en-US',{hour12:false});
+  const de = document.getElementById('hdrDate'); if(de) de.textContent = n.toLocaleDateString('en-US');
+}
+setInterval(tick, 1000); tick();
+
+// ═══════════════════════════════════════════════════════
+// DEPT SELECT SCREEN
+// ═══════════════════════════════════════════════════════
+function buildDeptScreen() {
+  const grid = document.getElementById('deptGrid');
+  grid.innerHTML = DEPARTMENTS.map(d => `
+    <div class="dept-btn ${d.isManager?'manager-btn':''}" data-dept="${d.id}"
+         onclick="selectDept('${d.id}')">
+      <div class="dept-icon">${d.icon}</div>
+      <div class="dept-label">${d.label}</div>
+      <div class="dept-count">${d.tools ? d.tools.length + ' tools' : 'Dashboard'}</div>
+    </div>`).join('');
+}
+
+let pendingDeptId = null;
+function selectDept(id) {
+  document.querySelectorAll('.dept-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelector(`[data-dept="${id}"]`).classList.add('selected');
+  pendingDeptId = id;
+  const dept = DEPARTMENTS.find(d => d.id === id);
+  if (dept?.isManager) {
+    document.getElementById('pinArea').style.display = 'block';
+    document.getElementById('noPinArea').style.display = 'none';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  } else {
+    document.getElementById('pinArea').style.display = 'none';
+    document.getElementById('noPinArea').style.display = 'block';
+  }
+}
+
+function enterDept() {
+  if (!pendingDeptId) { toast('Select a department first','err'); return; }
+  const dept = DEPARTMENTS.find(d => d.id === pendingDeptId);
+  if (dept?.isManager) {
+    const pin = document.getElementById('pinInput').value.trim();
+    if (pin !== dept.pin) { toast('Wrong PIN','err'); return; }
+  }
+  launchApp(dept);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && pendingDeptId) enterDept(); });
+
+// ═══════════════════════════════════════════════════════
+// LAUNCH APP
+// ═══════════════════════════════════════════════════════
+function launchApp(dept) {
+  activeDept = dept;
+  tools = dept.isManager ? [] : (allTools[dept.id] || []);
+
+  // Apply dept color CSS var
+  document.documentElement.style.setProperty('--dept-color', dept.color);
+
+  // Build tab bar
+  buildTabs(dept);
+
+  // Chip
+  const chip = document.getElementById('deptChip');
+  chip.textContent = dept.label.toUpperCase();
+  chip.style.color = dept.color;
+  chip.style.borderColor = dept.color;
+  chip.style.background = dept.color + '15';
+
+  // Show/hide fiber note
+  document.getElementById('fiberNote').style.display = dept.checkInOnly ? 'block' : 'none';
+  document.getElementById('toolAssignBlock').style.display = dept.checkInOnly ? 'none' : 'block';
+
+  // Populate tool select
+  populateToolSelect();
+
+  // Settings info
+  document.getElementById('infoRec').textContent = records.filter(r => dept.isManager || r.dept === dept.id).length;
+  document.getElementById('infoDef').textContent = defects.filter(d => dept.isManager || d.dept === dept.id).length;
+  document.getElementById('infodept').textContent = dept.label;
+
+  // Manager dept filter selects
+  if (dept.isManager) {
+    setTimeout(() => {
+      buildManagerFilters();
+      renderManager();
+      initReports();
+    }, 300);
+    setInterval(renderManager, 10000);
+  }
+
+  // Render
+  renderToolGrid();
+  renderRecords();
+  renderDefects();
+  renderToolMgmt();
+
+  // QC-specific init
+  if (dept.isQC) {
+    setTimeout(() => initQCTab(), 200);
+  }
+
+  document.getElementById('deptScreen').classList.add('hidden');
+  document.getElementById('mainApp').style.display = 'flex';
+
+  // Wire scan buttons after UI is rendered
+  setTimeout(wireScanButtons, 300);
+
+  // Update API key status
+  setTimeout(() => {
+    const statusEl = document.getElementById('apiKeyStatus');
+    if (statusEl) {
+      if (getApiKey()) {
+        statusEl.textContent = '✅ API key is set — photo scanning active';
+        statusEl.style.color = '#16a34a';
+      } else {
+        statusEl.textContent = '⚠️ No API key — enter one below to enable photo scanning';
+        statusEl.style.color = '#d97706';
+      }
+    }
+  }, 400);
+
+  // Init MSAL if config present
+  if (config.clientId && config.tenantId) initMSAL();
+}
+
+function buildTabs(dept) {
+  const bar = document.getElementById('tabBar');
+  let tabs = [];
+  if (!dept.isManager) {
+    tabs = [
+      { id:'scan',    label:'📷 SCAN' },
+      { id:'tools',   label:'🔧 TOOLS' },
+      ...(dept.isQC ? [{ id:'qc', label:'🔍 QC CHECKS' }] : []),
+      { id:'defects', label:'⚠️ DEFECTS' },
+      { id:'records', label:'📋 RECORDS' },
+      { id:'settings',label:'⚙️ CFG' },
+    ];
+  } else {
+    tabs = [
+      { id:'manager', label:'📊 DASHBOARD' },
+      { id:'records', label:'📋 RECORDS' },
+      { id:'settings',label:'⚙️ CFG' },
+    ];
+  }
+  bar.innerHTML = tabs.map((t,i) => `<div class="tab ${i===0?'active':''}" onclick="showTab('${t.id}',this)">${t.label}</div>`).join('');
+  // activate first page
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tabs[0].id).classList.add('active');
+}
+
+function showTab(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const pg = document.getElementById('tab-'+id);
+  if (pg) pg.classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'tools') renderToolGrid();
+  if (id === 'records') renderRecords();
+  if (id === 'manager') { renderManager(); initReports(); }
+  if (id === 'qc') { initQCTab(); }
+  if (id === 'settings') { renderToolMgmt(); updateSettingsStatus(); }
+}
+
+function changeDept() {
+  if (currentSession) { toast('Stop current session first','err'); return; }
+  activeDept = null;
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('deptScreen').classList.remove('hidden');
+  pendingDeptId = null;
+  document.getElementById('noPinArea').style.display = 'none';
+  document.getElementById('pinArea').style.display = 'none';
+  document.querySelectorAll('.dept-btn').forEach(b => b.classList.remove('selected'));
+}
+
+// ═══════════════════════════════════════════════════════
+// WO LOOKUP
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const si = document.getElementById('scanInput');
+  if (si) si.addEventListener('keydown', e => { if (e.key === 'Enter') lookupWO(); });
+});
+
+// Built-in dept code → name translator
+// Add your company's dept codes here as you discover them
+const DEPT_NAMES = {
+  // Injection Mold
+  '1300R':'Injection Mold','1300':'Injection Mold','1300INS':'Injection Mold',
+  'IM01':'Injection Mold','IM02':'Injection Mold','IM03':'Injection Mold',
+  'INJECTIONMOLD':'Injection Mold',
+  // Blow Mold
+  '1400R':'Blow Mold','1400':'Blow Mold','BLOWMOLD':'Blow Mold',
+  // Structure Mold
+  '1370R':'Structure Mold','1370':'Structure Mold',
+  '1500R':'Structure Mold','1500':'Structure Mold','STRUCTUREMOLD':'Structure Mold',
+  // SMC
+  '1600R':'SMC','1600':'SMC',
+  // Metals
+  '1650R':'Metals','1650':'Metals','1700R':'Metals','1700':'Metals',
+  // Fiber
+  '1800R':'Fiber','1800':'Fiber',
+};
+
+function resolveDeptName(raw) {
+  if (!raw) return '';
+  // If it's already a name (contains letters and spaces, not just digits/letters code), use as-is
+  if (/[a-zA-Z ]{4,}/.test(raw) && !/^\d+[A-Z]?$/.test(raw.trim())) return raw;
+  // Otherwise look up in table
+  return DEPT_NAMES[raw.trim().toUpperCase()] || raw;
+}
+
+function lookupWO() {
+  const val = document.getElementById('scanInput').value.trim();
+  if (!val) { toast('Scan or enter a Job #','err'); return; }
+
+  // Try exact match, then uppercase
+  const wo = woDb[val] || woDb[val.toUpperCase()];
+
+  // Reset banners
+  document.getElementById('woFoundBanner').style.display = 'none';
+  document.getElementById('woNotFoundBanner').style.display = 'none';
+
+  if (wo) {
+    setField('f_wo',        wo.wo);
+    setField('f_pn',        wo.pn);
+    setField('f_pname',     wo.name);
+    setField('f_deptcode',  resolveDeptName(wo.dept || ''));
+    setField('f_specrev',   wo.mold || '');
+    setField('f_opseq',     wo.schgroup || '');
+    setField('f_qty',       wo.balance || wo.run || '');
+    setField('f_uom',       'EA');
+    setField('f_schedstart',wo.scheddate || '');
+    setField('f_scheddone', wo.enddate || '');
+
+    // Show found banner
+    document.getElementById('woFoundBanner').style.display = 'flex';
+    document.getElementById('woFoundSub').textContent =
+      `${wo.name}  •  P/N: ${wo.pn}  •  Status: ${wo.status||'—'}  •  Mold: ${wo.mold||'—'}  •  Due: ${wo.enddate||'—'}`;
+
+  } else {
+    // Not found — pre-fill job # and let worker complete rest
+    setField('f_wo', val);
+    ['f_pn','f_pname','f_deptcode','f_status','f_opseq','f_qty','f_uom','f_schedstart','f_scheddone']
+      .forEach(id => setField(id, ''));
+
+    if (Object.keys(woDb).length > 0) {
+      document.getElementById('woNotFoundBanner').style.display = 'block';
+    }
+  }
+
+  // Remember operator name for the shift
+  const shiftName = getShiftName();
+  document.getElementById('f_name').value = shiftName || '';
+  photos = { firstArticle:[], defect:[], defectOnly:[] };
+  renderPGrid('pg-firstArticle','firstArticle');
+  renderPGrid('pg-defect','defect');
+  document.getElementById('woBlock').style.display = 'block';
+
+  // Auto-focus operator field
+  setTimeout(() => document.getElementById('f_name')?.focus(), 150);
+}
+
+function setField(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val || '';
+}
+
+// ═══════════════════════════════════════════════════════
+// SESSION
+// ═══════════════════════════════════════════════════════
+function startSession() {
+  const wo   = document.getElementById('f_wo').value.trim();
+  const name = document.getElementById('f_name').value.trim();
+  const toolId = document.getElementById('f_tool')?.value;
+  const isFiber = activeDept?.checkInOnly;
+
+  if (!wo)   { toast('Enter W/O number','err'); return; }
+  if (!name) { toast('Enter your name','err'); return; }
+  if (!isFiber && !toolId) { toast('Select a tool','err'); return; }
+
+  // Remember name for this shift
+  saveShiftName(name);
+
+  const now = new Date();
+  currentSession = {
+    wo,
+    pn:         document.getElementById('f_pn').value.trim(),
+    pname:      document.getElementById('f_pname').value.trim(),
+    deptcode:   document.getElementById('f_deptcode').value.trim(),
+    status:     document.getElementById('f_status').value.trim(),
+    opseq:      document.getElementById('f_opseq').value.trim(),
+    qty:        document.getElementById('f_qty').value.trim(),
+    uom:        document.getElementById('f_uom').value.trim(),
+    schedstart: document.getElementById('f_schedstart').value.trim(),
+    scheddone:  document.getElementById('f_scheddone').value.trim(),
+    dept: activeDept.id, operator: name, toolId,
+    startTime: now.toISOString(), startDisplay: now.toLocaleTimeString('en-US',{hour12:false}),
+    date: now.toLocaleDateString('en-US')
+  };
+
+  // Mark tool running
+  if (toolId) {
+    const t = tools.find(t => t.id === toolId);
+    if (t) { t.status='run'; t.currentWO=wo; t.currentOp=name; t.startTime=now.toISOString(); saveAllTools(); }
+  }
+
+  document.getElementById('sessBanner').style.display = 'block';
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('stopBtn').style.display = 'flex';
+  document.getElementById('sessToolLbl').textContent = isFiber ? 'FIBER CHECK-IN' : (tools.find(t=>t.id===toolId)?.name || '');
+  document.getElementById('sessStartLbl').textContent = currentSession.startDisplay;
+  sessInterval = setInterval(updateSessTimer, 1000);
+  renderToolGrid();
+  toast('▶ Session started','ok');
+}
+
+function updateSessTimer() {
+  if (!currentSession) return;
+  const s = Math.floor((Date.now() - new Date(currentSession.startTime)) / 1000);
+  document.getElementById('sessTimer').textContent =
+    `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+
+async function stopSession() {
+  if (!currentSession) return;
+  clearInterval(sessInterval);
+  const now = new Date();
+  const s = Math.floor((now - new Date(currentSession.startTime)) / 1000);
+  const dur = `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+  const rec = {
+    id: Date.now(), ...currentSession,
+    endTime: now.toLocaleTimeString('en-US',{hour12:false}), duration:dur,
+    defect:     document.getElementById('f_defect')?.value.trim() || '',
+    damaged:    document.getElementById('f_damaged')?.value.trim() || '',
+    setupNotes: document.getElementById('f_setup')?.value.trim() || '',
+    notes:      document.getElementById('f_notes')?.value.trim() || '',
+    photos: {
+      good:    [...(photos.good    || [])],
+      bad:     [...(photos.bad     || [])],
+      damaged: [...(photos.damaged || [])],
+      label:   [...(photos.label   || [])],
+      setup:   [...(photos.setup   || [])],
+    },
+    photoUrls:[], synced:false
+  };
+
+  document.getElementById('savingBar').style.display = 'block';
+  setProg(30);
+
+  // Upload all photos to SharePoint organized by category
+  if (graphToken) {
+    const allPics = [
+      ...(photos.good    ||[]).map(p=>({d:p,t:'GoodPart'})),
+      ...(photos.bad     ||[]).map(p=>({d:p,t:'BadDefect'})),
+      ...(photos.damaged ||[]).map(p=>({d:p,t:'Damaged'})),
+      ...(photos.label   ||[]).map(p=>({d:p,t:'Label'})),
+      ...(photos.setup   ||[]).map(p=>({d:p,t:'Setup'})),
+    ];
+    for (let i=0;i<allPics.length;i++) {
+      const url = await uploadPhoto(allPics[i].d, `${rec.wo}_${allPics[i].t}_${i+1}_${Date.now()}.jpg`, rec.wo+'/'+allPics[i].t);
+      if (url) rec.photoUrls.push(url);
+      setProg(30 + Math.floor((i+1)/Math.max(allPics.length,1)*50));
+    }
+  }
+  setProg(85);
+  records.unshift(rec); saveRecords();
+
+  // Mark tool idle
+  if (currentSession.toolId) {
+    const t = tools.find(t => t.id === currentSession.toolId);
+    if (t) { t.status='idle'; t.currentWO=''; t.currentOp=''; t.startTime=null; saveAllTools(); }
+  }
+
+  if (graphToken) { await saveRecordCloud(rec); rec.synced=true; saveRecords(); }
+  setProg(100);
+  setTimeout(() => { document.getElementById('savingBar').style.display='none'; }, 700);
+
+  // Reset
+  currentSession = null;
+  resetPhotos();
+  ['f_defect','f_damaged','f_setup','f_notes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('sessBanner').style.display = 'none';
+  document.getElementById('startBtn').style.display = 'flex';
+  document.getElementById('stopBtn').style.display = 'none';
+  document.getElementById('scanInput').value = '';
+  document.getElementById('woBlock').style.display = 'none';
+  document.getElementById('woFoundBanner').style.display = 'none';
+  document.getElementById('woNotFoundBanner').style.display = 'none';
+  renderToolGrid();
+  updateCounts();
+  toast(`✔ Saved! ${dur}`, 'ok');
+}
+
+function setProg(p) { const el=document.getElementById('pFill'); if(el) el.style.width=p+'%'; }
+
+// ═══════════════════════════════════════════════════════
+// TOOLS
+// ═══════════════════════════════════════════════════════
+function populateToolSelect() {
+  const sel = document.getElementById('f_tool');
+  if (!sel || !tools) return;
+  sel.innerHTML = '<option value="">-- Pick a tool --</option>' +
+    tools.map(t => `<option value="${t.id}">${t.name}${t.status==='run'?' (IN USE)':''}</option>`).join('');
+}
+
+function renderToolGrid() {
+  const grid = document.getElementById('toolGrid');
+  if (!grid || !tools) return;
+  const list = toolFilter==='all' ? tools : tools.filter(t => t.status === toolFilter);
+  if (!list.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ei">🔧</div>No tools</div>'; return; }
+  grid.innerHTML = list.map(t => {
+    let elapsed = '';
+    if (t.status==='run' && t.startTime) {
+      const s = Math.floor((Date.now()-new Date(t.startTime))/1000);
+      elapsed = `<div class="tc-elapsed">${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}</div>`;
+    }
+    return `<div class="tc ${t.status==='run'?'run':''}" onclick="showToolModal('${t.id}')">
+      <div class="tc-name">${t.name}</div>
+      <div class="tc-sub">${t.status==='run' ? '▶ ' + (t.currentOp||'Running') : '● IDLE'}</div>
+      ${t.status==='run' ? `<div style="font-family:var(--fm);font-size:9px;color:var(--muted)">${t.currentWO}</div>` : ''}
+      ${elapsed}
+    </div>`;
+  }).join('');
+}
+
+function setToolFilter(f, el) {
+  toolFilter = f;
+  document.querySelectorAll('#toolFilterRow .fchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderToolGrid();
+}
+
+setInterval(() => {
+  if (document.getElementById('tab-tools')?.classList.contains('active')) renderToolGrid();
+}, 5000);
+
+function showToolModal(id) {
+  const t = tools.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('modalTitle').textContent = t.name;
+  document.getElementById('modalTitle').style.color = activeDept?.color || 'var(--accent)';
+  let html = `<div class="fr">`;
+  if (t.status==='run') html += `<div class="badge b-run"><span class="dot"></span>RUNNING — ${t.currentOp}</div><div style="font-family:var(--fm);font-size:12px;color:var(--accent2);margin-top:5px">W/O: ${t.currentWO}</div>`;
+  else html += `<div class="badge b-idle">● IDLE</div>`;
+  html += `</div><button class="btn btn-outline" style="margin-top:10px" onclick="renameToolModal('${id}')">✏️ Rename</button>
+    <button class="btn btn-red btn-sm" style="margin-top:7px;width:100%" onclick="removeTool('${id}')">🗑 Remove</button>`;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('toolModal').classList.add('open');
+}
+
+function renameToolModal(id) {
+  const t = tools.find(x=>x.id===id); if(!t) return;
+  const n = prompt('New name:', t.name); if(!n) return;
+  t.name = n.trim(); saveAllTools(); renderToolGrid(); populateToolSelect(); renderToolMgmt(); closeModal();
+}
+
+function removeTool(id) {
+  if (!confirm('Remove tool?')) return;
+  const i = tools.findIndex(t=>t.id===id);
+  if(i>=0) tools.splice(i,1);
+  allTools[activeDept.id] = tools;
+  saveAllTools(); renderToolGrid(); populateToolSelect(); renderToolMgmt(); closeModal();
+}
+
+function closeModal() { document.getElementById('toolModal').classList.remove('open'); }
+
+function renderToolMgmt() {
+  const el = document.getElementById('toolMgmtList'); if(!el) return;
+  const list = activeDept?.isManager ? [] : (tools || []);
+  if (!list.length) { el.innerHTML = '<div class="empty">No tools configured</div>'; return; }
+  el.innerHTML = list.map(t => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-family:var(--fm);font-size:12px">${t.name}</div><div style="font-size:10px;color:var(--muted)">${t.status}</div></div>
+      <button class="btn btn-xs btn-outline" onclick="renameToolModal('${t.id}')">✏️</button>
+    </div>`).join('');
+}
+
+function addToolPrompt() {
+  if (activeDept?.isManager) { toast('Select a dept first to add tools','err'); return; }
+  const n = prompt('Tool / Machine name:'); if(!n) return;
+  const newT = { id: activeDept.id+'_'+Date.now(), name:n.trim(), dept:activeDept.id, status:'idle', currentWO:'', currentOp:'', startTime:null };
+  tools.push(newT); allTools[activeDept.id]=tools;
+  saveAllTools(); renderToolGrid(); populateToolSelect(); renderToolMgmt();
+  toast('Tool added','ok');
+}
+
+// ═══════════════════════════════════════════════════════
+// PHOTOS — 5 categories
+// ═══════════════════════════════════════════════════════
+const PHOTO_CATS = {
+  good:    { label:'Good Part',    color:'#10b981', gridId:'pg-good',    cntId:'cnt-good' },
+  bad:     { label:'Bad/Defect',   color:'#ef4444', gridId:'pg-bad',     cntId:'cnt-bad' },
+  damaged: { label:'Damaged',      color:'#f97316', gridId:'pg-damaged',  cntId:'cnt-damaged' },
+  label:   { label:'Label/Tag',    color:'#8b5cf6', gridId:'pg-label',   cntId:'cnt-label' },
+  setup:   { label:'Setup/Machine',color:'#06b6d4', gridId:'pg-setup',   cntId:'cnt-setup' },
+  qccheck: { label:'QC Photo', color:'#ec4899', gridId:'pg-qccheck', cntId:null },
+  defectOnly:{ label:'Defect', color:'#ef4444', gridId:'pg-defectOnly', cntId:null },
+};
+
+function toggleCat(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function addPhoto(ctx) { currentPhotoCtx = ctx; document.getElementById('photoInput').click(); }
+
+function handlePhoto(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    if (!photos[currentPhotoCtx]) photos[currentPhotoCtx] = [];
+    photos[currentPhotoCtx].push(ev.target.result);
+    const cat = PHOTO_CATS[currentPhotoCtx];
+    if (cat) renderPGrid(cat.gridId, currentPhotoCtx);
+    updatePhotoCounts();
+    // Auto-open that category
+    const bodyId = 'cat-' + currentPhotoCtx;
+    const body = document.getElementById(bodyId);
+    if (body) body.style.display = 'block';
+  };
+  reader.readAsDataURL(f);
+  e.target.value = '';
+}
+
+function updatePhotoCounts() {
+  Object.entries(PHOTO_CATS).forEach(([ctx, cat]) => {
+    if (!cat.cntId) return;
+    const cnt = document.getElementById(cat.cntId);
+    if (!cnt) return;
+    const n = (photos[ctx] || []).length;
+    cnt.textContent = n;
+    cnt.classList.toggle('has-photos', n > 0);
+  });
+}
+
+function renderPGrid(gridId, ctx) {
+  const grid = document.getElementById(gridId); if (!grid) return;
+  const cat = PHOTO_CATS[ctx];
+  const ps = photos[ctx] || [];
+  const lbl = cat?.label || ctx.toUpperCase();
+  grid.innerHTML = ps.map((p, i) => `
+    <div class="pthumb" onclick="prevImg('${p.replace(/'/g,"\\'")}')">
+      <img src="${p}">
+      <button class="pdel" onclick="event.stopPropagation();delPhoto('${ctx}',${i})">✕</button>
+    </div>`).join('') +
+    `<div class="padd" onclick="addPhoto('${ctx}')"><span>+</span><span>${lbl}</span></div>`;
+}
+
+function delPhoto(ctx, i) {
+  photos[ctx].splice(i, 1);
+  const cat = PHOTO_CATS[ctx];
+  if (cat) renderPGrid(cat.gridId, ctx);
+  updatePhotoCounts();
+}
+
+function prevImg(src) {
+  document.getElementById('iovImg').src = src;
+  document.getElementById('iov').style.display = 'flex';
+}
+
+function resetPhotos() {
+  photos = { good:[], bad:[], damaged:[], label:[], setup:[], defectOnly:[] };
+  Object.values(PHOTO_CATS).forEach(cat => {
+    if (cat.gridId) {
+      const grid = document.getElementById(cat.gridId);
+      if (grid) grid.innerHTML = `<div class="padd" onclick="addPhoto('${Object.keys(PHOTO_CATS).find(k=>PHOTO_CATS[k]===cat)}')"><span>+</span><span>${cat.label}</span></div>`;
+    }
+  });
+  // close all cat bodies
+  ['cat-good','cat-bad','cat-damaged','cat-label','cat-setup'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  updatePhotoCounts();
+}
+
+// ═══════════════════════════════════════════════════════
+// PRINT DEFECT REPORT
+// ═══════════════════════════════════════════════════════
+function printDefectReport(recId) {
+  const rec = records.find(r => r.id === recId);
+  if (!rec) return;
+
+  const allPhotos = [
+    ...(rec.photos?.bad    ||[]).map(p=>({src:p,cat:'Bad / Defective'})),
+    ...(rec.photos?.damaged||[]).map(p=>({src:p,cat:'Damaged'})),
+    ...(rec.photos?.good   ||[]).map(p=>({src:p,cat:'Good Part'})),
+    ...(rec.photos?.label  ||[]).map(p=>({src:p,cat:'Label / Tag'})),
+    ...(rec.photos?.setup  ||[]).map(p=>({src:p,cat:'Setup / Machine'})),
+  ];
+
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <title>Defect Report — ${rec.wo}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:20px;color:#000;max-width:800px;margin:0 auto}
+      h1{font-size:22px;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:16px}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+      .field label{font-size:10px;text-transform:uppercase;color:#666;font-weight:bold;display:block}
+      .field span{font-size:14px;font-weight:600}
+      .section{margin-top:16px;border-top:1px solid #ccc;padding-top:10px}
+      .section h3{font-size:13px;text-transform:uppercase;color:#555;margin-bottom:8px}
+      .photos{display:flex;flex-wrap:wrap;gap:8px}
+      .photo-block{text-align:center}
+      .photo-block img{width:160px;height:160px;object-fit:cover;border:1px solid #ccc;border-radius:4px;display:block}
+      .photo-block span{font-size:10px;color:#666;margin-top:3px;display:block}
+      .defect-box{background:#fff3f3;border:1px solid #ffaaaa;border-radius:4px;padding:10px;font-size:13px}
+      .footer{margin-top:24px;border-top:1px solid #ccc;padding-top:8px;font-size:10px;color:#999;display:flex;justify-content:space-between}
+      @media print{button{display:none}}
+    </style>
+  </head><body>
+    <button onclick="window.print()" style="margin-bottom:16px;padding:8px 16px;background:#000;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:14px">🖨️ Print This Report</button>
+    <h1>📋 Production / Defect Report</h1>
+    <div class="grid">
+      <div class="field"><label>Job # (W/O)</label><span>${rec.wo||'—'}</span></div>
+      <div class="field"><label>Assy / P/N</label><span>${rec.pn||'—'}</span></div>
+      <div class="field"><label>Part Name</label><span>${rec.pname||'—'}</span></div>
+      <div class="field"><label>Department</label><span>${rec.deptcode||rec.dept||'—'}</span></div>
+      <div class="field"><label>Operator</label><span>${rec.operator||'—'}</span></div>
+      <div class="field"><label>Op Seq</label><span>${rec.opseq||'—'}</span></div>
+      <div class="field"><label>Sched Qty</label><span>${rec.qty||'—'} ${rec.uom||''}</span></div>
+      <div class="field"><label>Status</label><span>${rec.status||'—'}</span></div>
+      <div class="field"><label>Date</label><span>${rec.date||'—'}</span></div>
+      <div class="field"><label>Start Time</label><span>${rec.startTime?.slice(11,19)||'—'}</span></div>
+      <div class="field"><label>End Time</label><span>${rec.endTime||'—'}</span></div>
+      <div class="field"><label>Duration</label><span>${rec.duration||'—'}</span></div>
+      <div class="field"><label>Sched Start</label><span>${rec.schedstart||'—'}</span></div>
+      <div class="field"><label>Sched Done</label><span>${rec.scheddone||'—'}</span></div>
+    </div>
+
+    ${rec.defect ? `<div class="section"><h3>⚠️ Defect / Issue</h3><div class="defect-box">${rec.defect}</div></div>` : ''}
+    ${rec.damaged ? `<div class="section"><h3>🔨 Damage Notes</h3><div class="defect-box" style="background:#fff8f3;border-color:#ffcc99">${rec.damaged}</div></div>` : ''}
+    ${rec.setupNotes ? `<div class="section"><h3>⚙️ Setup Notes</h3><div class="defect-box" style="background:#f0faff;border-color:#99ccff">${rec.setupNotes}</div></div>` : ''}
+    ${rec.notes ? `<div class="section"><h3>📝 General Notes</h3><p style="font-size:13px">${rec.notes}</p></div>` : ''}
+
+    ${allPhotos.length ? `
+    <div class="section">
+      <h3>📸 Photos (${allPhotos.length})</h3>
+      <div class="photos">
+        ${allPhotos.map(p=>`<div class="photo-block"><img src="${p.src}"><span>${p.cat}</span></div>`).join('')}
+      </div>
+    </div>` : '<div class="section"><h3>📸 Photos</h3><p style="color:#999;font-size:12px">No photos attached</p></div>'}
+
+    <div class="footer">
+      <span>ShopTrack Production System</span>
+      <span>Printed: ${new Date().toLocaleString()}</span>
+      <span>W/O: ${rec.wo}</span>
+    </div>
+  </body></html>`);
+  win.document.close();
+}
+
+// ═══════════════════════════════════════════════════════
+// DEFECTS
+// ═══════════════════════════════════════════════════════
+async function saveDefect() {
+  const wo=document.getElementById('d_wo').value.trim();
+  const type=document.getElementById('d_type').value;
+  if(!wo){toast('Enter W/O','err');return;}
+  if(!type){toast('Select defect type','err');return;}
+  const now=new Date();
+  const def={
+    id:Date.now(), wo, pn:document.getElementById('d_pn').value.trim(),
+    pname:document.getElementById('d_pname').value.trim(),
+    dept:activeDept.id, operator:document.getElementById('d_name').value.trim(),
+    type, desc:document.getElementById('d_desc').value.trim(),
+    date:now.toLocaleDateString('en-US'), time:now.toLocaleTimeString('en-US',{hour12:false}),
+    photos:[...(photos.defectOnly||[])], photoUrls:[], synced:false
+  };
+  if(graphToken){
+    for(let i=0;i<def.photos.length;i++){
+      const u=await uploadPhoto(def.photos[i],`DEF_${wo}_${i}_${Date.now()}.jpg`,'Defects/'+wo);
+      if(u) def.photoUrls.push(u);
+    }
+  }
+  defects.unshift(def); saveDefects();
+  photos.defectOnly=[];
+  renderPGrid('pg-defectOnly','defectOnly');
+  ['d_wo','d_pn','d_pname','d_name','d_desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('d_type').value='';
+  renderDefects(); updateCounts();
+  toast('⚠️ Defect saved','ok');
+}
+
+function renderDefects() {
+  const el=document.getElementById('defectsList'); if(!el) return;
+  const list = activeDept?.isManager ? defects : defects.filter(d=>d.dept===activeDept?.id);
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ei">⚠️</div>None yet</div>';return;}
+  el.innerHTML=list.slice(0,20).map(d=>`
+    <div class="rec-item">
+      <div class="rec-hdr"><div class="rec-wo">${d.wo}</div><div class="badge b-warn">⚠️ ${d.type}</div></div>
+      <div class="rec-meta">
+        <span>${d.dept}</span><span><b>${d.operator||'—'}</b></span>
+        <span>${d.date} ${d.time}</span><span>${d.synced?'☁️':'📴'}</span>
+      </div>
+      ${d.desc?`<div style="font-size:10px;color:var(--red);margin-top:5px;font-family:var(--fm)">${d.desc}</div>`:''}
+      ${d.photos?.length?`<div class="rec-photos">${d.photos.map(p=>`<img src="${p}" onclick="prevImg('${p.replace(/'/g,"\\'")}')">`).join('')}</div>`:''}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// RECORDS
+// ═══════════════════════════════════════════════════════
+function renderRecords() {
+  const el=document.getElementById('recordsList'); if(!el) return;
+  const srch=(document.getElementById('recSearch')?.value||'').toLowerCase();
+  let list = activeDept?.isManager ? records : records.filter(r=>r.dept===activeDept?.id);
+  if(srch) list=list.filter(r=>[r.wo,r.pn,r.pname,r.operator,r.dept].some(f=>(f||'').toLowerCase().includes(srch)));
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ei">📋</div>No records</div>';return;}
+  const deptName = id => DEPARTMENTS.find(d=>d.id===id)?.label || id;
+  el.innerHTML=list.slice(0,30).map(r=>{
+    const dc = DEPARTMENTS.find(d=>d.id===r.dept)?.color || 'var(--accent)';
+    const allPics=[
+      ...(r.photos?.good    ||[]).map(p=>({src:p,color:'#10b981',icon:'✅'})),
+      ...(r.photos?.bad     ||[]).map(p=>({src:p,color:'#ef4444',icon:'❌'})),
+      ...(r.photos?.damaged ||[]).map(p=>({src:p,color:'#f97316',icon:'🔨'})),
+      ...(r.photos?.label   ||[]).map(p=>({src:p,color:'#8b5cf6',icon:'🏷️'})),
+      ...(r.photos?.setup   ||[]).map(p=>({src:p,color:'#06b6d4',icon:'⚙️'})),
+    ];
+    const hasIssue = r.defect || r.damaged || (r.photos?.bad||[]).length || (r.photos?.damaged||[]).length;
+    return `<div class="rec-item" style="border-left:3px solid ${dc}">
+      <div class="rec-hdr">
+        <div class="rec-wo" style="color:${dc}">${r.wo}</div>
+        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+          ${hasIssue?'<div class="badge b-warn">⚠️</div>':''}
+          <div class="badge" style="color:${dc};border-color:${dc}40;background:${dc}15">${deptName(r.dept)}</div>
+        </div>
+      </div>
+      <div class="rec-meta">
+        <span>Assy: <b>${r.pn||'—'}</b></span><span>Op: <b>${r.operator||'—'}</b></span>
+        <span>⏱ <b>${r.duration||'—'}</b></span><span>${r.date} ${r.startTime?.slice(11,19)||''}</span>
+        <span>Dept: <b>${r.deptcode||'—'}</b></span><span>Qty: <b>${r.qty||'—'} ${r.uom||''}</b></span>
+      </div>
+      ${r.pname?`<div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--fm)">${r.pname}</div>`:''}
+      ${r.defect?`<div style="font-size:10px;color:#ef4444;margin-top:4px;font-family:var(--fm)">❌ ${r.defect}</div>`:''}
+      ${r.damaged?`<div style="font-size:10px;color:#f97316;margin-top:3px;font-family:var(--fm)">🔨 ${r.damaged}</div>`:''}
+      ${allPics.length?`
+        <div style="margin-top:8px">
+          <div style="font-family:var(--fm);font-size:9px;color:var(--muted);margin-bottom:4px">📸 ${allPics.length} PHOTO${allPics.length>1?'S':''} — ${[
+            (r.photos?.good||[]).length?`✅${r.photos.good.length}`:'',
+            (r.photos?.bad||[]).length?`❌${r.photos.bad.length}`:'',
+            (r.photos?.damaged||[]).length?`🔨${r.photos.damaged.length}`:'',
+            (r.photos?.label||[]).length?`🏷️${r.photos.label.length}`:'',
+            (r.photos?.setup||[]).length?`⚙️${r.photos.setup.length}`:'',
+          ].filter(Boolean).join(' ')}</div>
+          <div class="rec-photos">
+            ${allPics.map(p=>`<div style="position:relative;display:inline-block">
+              <img src="${p.src}" onclick="prevImg('${p.src.replace(/'/g,"\\'")}')" style="border-bottom:3px solid ${p.color}">
+            </div>`).join('')}
+          </div>
+        </div>` : ''}
+      <button class="btn btn-outline btn-xs" onclick="printDefectReport(${r.id})" style="width:100%;margin-top:8px">🖨️ PRINT REPORT</button>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// REPORTING SYSTEM
+// ═══════════════════════════════════════════════════════
+
+function updateReportUI() {
+  const type = document.getElementById('rpt_type').value;
+  document.getElementById('rpt_dept_row').style.display   = type === 'operator' || type === 'qc' ? 'none' : 'block';
+  document.getElementById('rpt_op_row').style.display     = type === 'operator' ? 'block' : 'none';
+}
+
+function populateReportDepts() {
+  const sel = document.getElementById('rpt_dept'); if (!sel) return;  sel.innerHTML = '<option value="ALL">All Departments</option>' +
+    DEPARTMENTS.filter(d=>!d.isManager).map(d=>`<option value="${d.id}">${d.label}</option>`).join('');
+}
+
+function getReportData() {
+  const type     = document.getElementById('rpt_type').value;
+  const period   = document.getElementById('rpt_period').value;
+  const deptId   = document.getElementById('rpt_dept')?.value || 'ALL';
+  const opName   = document.getElementById('rpt_operator')?.value.trim().toLowerCase() || '';
+  const today    = new Date().toLocaleDateString('en-US');
+
+  // Date filter
+  const now = new Date();
+  const filterDate = r => {
+    if (period === 'today')  return r.date === today;
+    if (period === 'shift1') return r.date === today && (r.shift==='1st Shift'||(r.startTime&&parseInt(r.startTime.slice(11,13))<8));
+    if (period === 'shift2') return r.date === today && (r.shift==='2nd Shift'||(r.startTime&&parseInt(r.startTime.slice(11,13))>=8&&parseInt(r.startTime.slice(11,13))<16));
+    if (period === 'shift3') return r.date === today && (r.shift==='3rd Shift'||(r.startTime&&parseInt(r.startTime.slice(11,13))>=16));
+    if (period === 'week') {
+      const d = new Date(r.date); const diff = (now - d) / 86400000;
+      return diff >= 0 && diff < 7;
+    }
+    return true; // all
+  };
+
+  if (type === 'qc') {
+    const qcData = JSON.parse(localStorage.getItem('st_qcchecks') || '[]');
+    return { type, records: [], qcChecks: qcData.filter(c => filterDate({date:c.date})), deptId, period };
+  }
+
+  if (type === 'tool') {
+    const allRecs = records.filter(filterDate);
+    const toolMap = {};
+    // Seed ALL tools from ALL departments so every tool shows even with 0 activity
+    DEPARTMENTS.forEach(dept => {
+      (allTools[dept.id] || []).forEach(t => {
+        const key = dept.id + '|' + t.id;
+        toolMap[key] = { toolId: t.id, toolName: t.name, dept: dept.label, deptId: dept.id, sessions: 0, totalMins: 0, defects: 0, operators: new Set(), lastWO: '--' };
+      });
+    });
+    // Fill in actual session data
+    allRecs.forEach(r => {
+      if (!r.toolId) return;
+      const key = r.dept + '|' + r.toolId;
+      if (!toolMap[key]) toolMap[key] = { toolId: r.toolId, toolName: r.toolName||r.toolId, dept: DEPARTMENTS.find(d=>d.id===r.dept)?.label||r.dept, deptId: r.dept, sessions: 0, totalMins: 0, defects: 0, operators: new Set(), lastWO: '--' };
+      const e = toolMap[key];
+      e.sessions++;
+      e.totalMins += Number(r.durationMins)||0;
+      if (r.defect) e.defects++;
+      if (r.operator) e.operators.add(r.operator);
+      if (r.wo) e.lastWO = r.wo;
+    });
+    const toolList = Object.values(toolMap).map(t => ({...t, operators: [...t.operators]}));
+    return { type, records: allRecs, toolList, qcChecks: [], deptId, period };
+  }
+
+  let recs = records.filter(filterDate);
+  if (deptId !== 'ALL') recs = recs.filter(r => r.dept === deptId);
+  if (opName) recs = recs.filter(r => (r.operator||'').toLowerCase().includes(opName));
+  return { type, records: recs, qcChecks: [], deptId, period };
+}
+
+function generateReport(format) {
+  const data = getReportData();
+  if (format === 'csv')    { exportReportCSV(data); return; }
+  if (format === 'screen') { previewReport(data); return; }
+  if (format === 'pdf')    { printReport(data); }
+}
+
+// ── CSV EXPORT ──
+function exportReportCSV(data) {
+  let csv = '';
+  const periodLabel = document.getElementById('rpt_period').options[document.getElementById('rpt_period').selectedIndex].text;
+
+  if (data.type === 'qc') {
+    csv = 'Date,Time,Inspector,Shift,Tool,Job # / W/O,P/N,Part Name,Result,Issues Found,Supervisor Notified,Action Taken\n';
+    csv += data.qcChecks.map(c => [
+      c.date, c.time, c.auditor, c.shift, c.toolName, c.wo, c.pn, c.pname,
+      c.result, (c.issueTypes||[]).join(' | '), c.supervisor||'', c.action||''
+    ].map(f=>`"${String(f||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  } else if (data.type === 'operator') {
+    // Group by operator
+    const byOp = {};
+    data.records.forEach(r => { if (!byOp[r.operator]) byOp[r.operator]=[]; byOp[r.operator].push(r); });
+    csv = 'Operator,Department,Date,Job # / W/O,P/N,Part Name,Tool,Start Time,End Time,Duration,Defect,Notes\n';
+    csv += data.records.map(r => [
+      r.operator, DEPARTMENTS.find(d=>d.id===r.dept)?.label||r.dept,
+      r.date, r.wo, r.pn, r.pname, r.toolName||'',
+      r.startTime?.slice(11,19)||'', r.endTime||'', r.duration||'',
+      r.defect||'', r.notes||''
+    ].map(f=>`"${String(f||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  } else {
+    csv = 'Department,Date,Job # / W/O,P/N,Part Name,Operator,Tool,Start Time,End Time,Duration,Defect,Notes\n';
+    csv += data.records.map(r => [
+      DEPARTMENTS.find(d=>d.id===r.dept)?.label||r.dept,
+      r.date, r.wo, r.pn, r.pname, r.operator, r.toolName||'',
+      r.startTime?.slice(11,19)||'', r.endTime||'', r.duration||'',
+      r.defect||'', r.notes||''
+    ].map(f=>`"${String(f||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  }
+
+  const fname = `ShopTrack_${data.type}_${new Date().toISOString().split('T')[0]}.csv`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = fname; a.click();
+  toast(`✔ CSV exported — ${data.records.length || data.qcChecks.length} records`, 'ok');
+}
+
+// ── SCREEN PREVIEW ──
+function previewReport(data) {
+  const el = document.getElementById('rpt_preview_content');
+  const periodLabel = document.getElementById('rpt_period').options[document.getElementById('rpt_period').selectedIndex].text;
+  document.getElementById('rpt_preview').style.display = 'block';
+
+  if (data.type === 'tool') {
+    const depts = [...new Set(data.toolList.map(t=>t.dept))].sort();
+    let html = '<h3 style="font-family:var(--fh);font-size:18px;margin-bottom:12px">ALL TOOLS SUMMARY</h3>';
+    depts.forEach(deptName => {
+      const deptTools = data.toolList.filter(t=>t.dept===deptName).sort((a,b)=>a.toolName.localeCompare(b.toolName,undefined,{numeric:true}));
+      if (!deptTools.length) return;
+      html += '<div style="margin-bottom:16px"><div style="font-family:var(--fh);font-size:14px;font-weight:700;color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:4px;margin-bottom:8px">'+deptName.toUpperCase()+'</div>';
+      html += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
+      html += '<tr style="background:#f1f5f9"><th style="padding:6px;text-align:left;border:1px solid #e2e8f0">Tool</th><th style="padding:6px;text-align:center;border:1px solid #e2e8f0">Sessions</th><th style="padding:6px;text-align:center;border:1px solid #e2e8f0">Time (min)</th><th style="padding:6px;text-align:center;border:1px solid #e2e8f0">Defects</th><th style="padding:6px;text-align:left;border:1px solid #e2e8f0">Last W/O</th></tr>';
+      deptTools.forEach(t => {
+        const defectColor = t.defects > 0 ? 'color:#dc2626;font-weight:700' : '';
+        html += '<tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:600">'+t.toolName+'</td><td style="padding:6px;text-align:center;border:1px solid #e2e8f0">'+t.sessions+'</td><td style="padding:6px;text-align:center;border:1px solid #e2e8f0">'+Math.round(t.totalMins)+'</td><td style="padding:6px;text-align:center;border:1px solid #e2e8f0;'+defectColor+'">'+t.defects+'</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px">'+t.lastWO+'</td></tr>';
+      });
+      html += '</table></div>';
+    });
+    el.innerHTML = html;
+    return;
+  }
+
+  if (data.type === 'qc') {
+    const issues = data.qcChecks.filter(c=>c.result==='ISSUE');
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+        ${[['Total Checks',data.qcChecks.length,'#1d4ed8'],['✅ Good',data.qcChecks.filter(c=>c.result==='PASS').length,'#16a34a'],['🚨 Issues',issues.length,'#dc2626']].map(([l,v,c])=>`
+          <div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:22px;font-weight:800;color:${c}">${v}</div>
+            <div style="font-size:10px;color:#6b7280">${l}</div>
+          </div>`).join('')}
+      </div>
+      ${data.qcChecks.length === 0 ? '<div class="empty"><div class="ei">🔍</div>No QC checks found for this period</div>' :
+        data.qcChecks.map(c=>`
+        <div style="background:#fff;border:1.5px solid ${c.result==='PASS'?'#86efac':'#fca5a5'};border-radius:8px;padding:10px;margin-bottom:6px;border-left:4px solid ${c.result==='PASS'?'#16a34a':'#dc2626'}">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-family:var(--fh);font-size:14px;font-weight:700;color:#111">${c.wo}</div>
+            <div style="font-size:12px;font-weight:700;color:${c.result==='PASS'?'#16a34a':'#dc2626'}">${c.result==='PASS'?'✅ GOOD':'🚨 ISSUE'}</div>
+          </div>
+          <div style="font-size:11px;color:#374151;margin-top:3px">${c.pname||c.pn||'—'}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;font-size:10px;color:#6b7280">
+            <span>🔧 ${c.toolName}</span><span>👤 ${c.auditor}</span><span>🕐 ${c.time}</span><span>${c.shift}</span>
+          </div>
+          ${c.issueTypes?.length?`<div style="margin-top:5px">${c.issueTypes.map(t=>`<span style="background:#fee2e2;color:#b91c1c;padding:2px 7px;border-radius:4px;font-size:10px;margin-right:3px">⚠️ ${t}</span>`).join('')}</div>`:''}
+        </div>`).join('')}`;
+  } else {
+    // Group by dept or operator
+    const grouped = {};
+    const groupKey = data.type === 'operator' ? r => r.operator||'Unknown' : r => DEPARTMENTS.find(d=>d.id===r.dept)?.label||r.dept||'Unknown';
+    data.records.forEach(r => { const k=groupKey(r); if(!grouped[k]) grouped[k]=[]; grouped[k].push(r); });
+
+    if (!data.records.length) { el.innerHTML='<div class="empty"><div class="ei">📋</div>No records found for this period</div>'; return; }
+
+    el.innerHTML = Object.entries(grouped).map(([group, recs]) => {
+      const totalMins = recs.reduce((s,r) => {
+        const parts = (r.duration||'').match(/(\d+)h\s*(\d+)?m?/);
+        return s + (parts ? parseInt(parts[1]||0)*60 + parseInt(parts[2]||0) : 0);
+      }, 0);
+      const issues = recs.filter(r=>r.defect||r.damaged).length;
+      return `
+      <div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-family:var(--fh);font-size:17px;font-weight:800;color:#111">${group}</div>
+          <div style="font-size:11px;color:#6b7280">${recs.length} job${recs.length>1?'s':''}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px">
+          ${[['Jobs',recs.length,'#1d4ed8'],['Total Time',totalMins>=60?Math.floor(totalMins/60)+'h '+(totalMins%60)+'m':totalMins+'m','#7c3aed'],['Issues',issues,issues?'#dc2626':'#16a34a']].map(([l,v,c])=>`
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:7px;padding:8px;text-align:center">
+            <div style="font-size:18px;font-weight:800;color:${c}">${v}</div>
+            <div style="font-size:10px;color:#6b7280">${l}</div>
+          </div>`).join('')}
+        </div>
+        ${recs.map(r=>`
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:7px;padding:8px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-family:var(--fm);font-size:12px;color:#1d4ed8;font-weight:600">${r.wo}</div>
+              <div style="font-size:11px;color:#374151">${r.pname||r.pn||'—'}</div>
+              <div style="font-size:10px;color:#6b7280;margin-top:2px">👤 ${r.operator||'—'} &nbsp; 🔧 ${r.toolName||'—'} &nbsp; 🕐 ${r.startTime?.slice(11,19)||'—'}</div>
+              ${r.defect?`<div style="font-size:10px;color:#dc2626;margin-top:3px">⚠️ ${r.defect}</div>`:''}
+            </div>
+            <div style="font-family:var(--fm);font-size:12px;color:#6b7280;white-space:nowrap;margin-left:8px">${r.duration||'—'}</div>
+          </div>`).join('')}
+      </div>`;
+    }).join('');
+  }
+  setTimeout(()=>document.getElementById('rpt_preview').scrollIntoView({behavior:'smooth'}),150);
+}
+
+// ── PRINT PDF REPORT ──
+function printReport(data) {
+  const periodLabel = document.getElementById('rpt_period').options[document.getElementById('rpt_period').selectedIndex].text;
+  const typeLabel   = document.getElementById('rpt_type').options[document.getElementById('rpt_type').selectedIndex].text;
+  const today       = new Date().toLocaleDateString('en-US');
+  const now         = new Date().toLocaleTimeString();
+
+  let bodyHTML = '';
+
+  if (data.type === 'qc') {
+    const issues = data.qcChecks.filter(c=>c.result==='ISSUE');
+    const passed  = data.qcChecks.filter(c=>c.result==='PASS').length;
+    bodyHTML = `
+      <div class="summary">
+        <div class="sum-box blue"><div class="sum-val">${data.qcChecks.length}</div><div class="sum-lbl">Total Checks</div></div>
+        <div class="sum-box green"><div class="sum-val">${passed}</div><div class="sum-lbl">✅ Good</div></div>
+        <div class="sum-box red"><div class="sum-val">${issues.length}</div><div class="sum-lbl">🚨 Issues</div></div>
+        <div class="sum-box purple"><div class="sum-val">${[...new Set(data.qcChecks.map(c=>c.auditor))].length}</div><div class="sum-lbl">Inspectors</div></div>
+      </div>
+      <div class="section-title">QC Check Log</div>
+      <table><thead><tr><th>#</th><th>Time</th><th>Inspector</th><th>Shift</th><th>Tool</th><th>W/O</th><th>P/N</th><th>Part Name</th><th>Result</th></tr></thead><tbody>
+        ${data.qcChecks.map((c,i)=>`<tr>
+          <td>${i+1}</td><td>${c.time||'—'}</td><td>${c.auditor}</td><td>${c.shift}</td>
+          <td><b>${c.toolName}</b></td><td>${c.wo}</td><td>${c.pn||'—'}</td><td>${c.pname||'—'}</td>
+          <td><span class="${c.result==='PASS'?'badge-good':'badge-bad'}">${c.result==='PASS'?'✅ GOOD':'🚨 ISSUE'}</span></td>
+        </tr>`).join('')}
+      </tbody></table>
+      ${issues.length?`
+      <div class="section-title">⚠️ Issues Detail</div>
+      ${issues.map((c,i)=>`
+        <div class="issue-card">
+          <h3>Issue #${i+1} — ${c.toolName} — ${c.time} — ${c.auditor}</h3>
+          <div class="field-grid">
+            <div><div class="lbl">W/O</div><b>${c.wo}</b></div>
+            <div><div class="lbl">P/N</div><b>${c.pn||'—'}</b></div>
+            <div><div class="lbl">Part Name</div><b>${c.pname||'—'}</b></div>
+            <div><div class="lbl">Supervisor</div><b>${c.supervisor||'—'}</b></div>
+            <div><div class="lbl">Shift</div><b>${c.shift}</b></div>
+          </div>
+          ${c.issueTypes?.length?`<div>${c.issueTypes.map(t=>`<span class="tag">⚠️ ${t}</span>`).join('')}</div>`:''}
+          ${c.action?`<div class="action-box"><b>Action Taken:</b> ${c.action}</div>`:''}
+          ${c.photos?.length?`<div class="photos">${c.photos.map(p=>`<img src="${p}">`).join('')}</div>`:''}
+        </div>`).join('')}`:''}`;
+
+
+  } else if (data.type === 'tool') {
+    const depts = [...new Set(data.toolList.map(t=>t.dept))].sort();
+    const total = data.toolList.length;
+    const active = data.toolList.filter(t=>t.sessions>0).length;
+    const totalDefects = data.toolList.reduce((s,t)=>s+t.defects,0);
+    const totalMins = data.toolList.reduce((s,t)=>s+t.totalMins,0);
+    bodyHTML = '<div class="summary"><div class="sum-box blue"><div class="sum-val">'+total+'</div><div class="sum-lbl">Total Tools</div></div><div class="sum-box green"><div class="sum-val">'+active+'</div><div class="sum-lbl">Active</div></div><div class="sum-box red"><div class="sum-val">'+totalDefects+'</div><div class="sum-lbl">Total Defects</div></div><div class="sum-box purple"><div class="sum-val">'+Math.round(totalMins)+'</div><div class="sum-lbl">Total Min</div></div></div>';
+    depts.forEach(function(deptName) {
+      var deptTools = data.toolList.filter(function(t){return t.dept===deptName;}).sort(function(a,b){return a.toolName.localeCompare(b.toolName,undefined,{numeric:true});});
+      if (!deptTools.length) return;
+      bodyHTML += '<div class="section-title">'+deptName.toUpperCase()+'</div><table><thead><tr><th>Tool</th><th>Sessions</th><th>Time (min)</th><th>Defects</th><th>Last W/O</th></tr></thead><tbody>';
+      deptTools.forEach(function(t) {
+        var dc = t.defects>0 ? 'color:#dc2626;font-weight:bold' : '';
+        bodyHTML += '<tr><td><b>'+t.toolName+'</b></td><td style="text-align:center">'+t.sessions+'</td><td style="text-align:center">'+Math.round(t.totalMins)+'</td><td style="text-align:center;'+dc+'">'+t.defects+'</td><td>'+t.lastWO+'</td></tr>';
+      });
+      bodyHTML += '</tbody></table>';
+    });
+
+  } else {
+    const grouped = {};
+    const groupKey = data.type==='operator' ? r=>r.operator||'Unknown' : r=>DEPARTMENTS.find(d=>d.id===r.dept)?.label||r.dept||'Unknown';
+    data.records.forEach(r=>{const k=groupKey(r);if(!grouped[k])grouped[k]=[];grouped[k].push(r);});
+
+    const totalJobs = data.records.length;
+    const totalMins = data.records.reduce((s,r)=>{const p=(r.duration||'').match(/(\d+)h\s*(\d+)?m?/);return s+(p?parseInt(p[1]||0)*60+parseInt(p[2]||0):0);},0);
+    const totalIssues = data.records.filter(r=>r.defect||r.damaged).length;
+
+    bodyHTML = `
+      <div class="summary">
+        <div class="sum-box blue"><div class="sum-val">${totalJobs}</div><div class="sum-lbl">Total Jobs</div></div>
+        <div class="sum-box purple"><div class="sum-val">${totalMins>=60?Math.floor(totalMins/60)+'h '+(totalMins%60)+'m':totalMins+'m'}</div><div class="sum-lbl">Total Time</div></div>
+        <div class="sum-box red"><div class="sum-val">${totalIssues}</div><div class="sum-lbl">Issues</div></div>
+        <div class="sum-box green"><div class="sum-val">${Object.keys(grouped).length}</div><div class="sum-lbl">${data.type==='operator'?'Operators':'Departments'}</div></div>
+      </div>
+      ${Object.entries(grouped).map(([group,recs])=>{
+        const gMins = recs.reduce((s,r)=>{const p=(r.duration||'').match(/(\d+)h\s*(\d+)?m?/);return s+(p?parseInt(p[1]||0)*60+parseInt(p[2]||0):0);},0);
+        const gIssues = recs.filter(r=>r.defect||r.damaged).length;
+        return `
+        <div class="section-title">${group} — ${recs.length} job${recs.length>1?'s':''} &nbsp;|&nbsp; ${gMins>=60?Math.floor(gMins/60)+'h '+(gMins%60)+'m':gMins+'m'} &nbsp;|&nbsp; ${gIssues} issue${gIssues!==1?'s':''}</div>
+        <table><thead><tr><th>#</th><th>Date</th><th>W/O</th><th>P/N</th><th>Part Name</th><th>${data.type==='operator'?'Department':'Operator'}</th><th>Tool</th><th>Start</th><th>End</th><th>Duration</th><th>Issue</th></tr></thead><tbody>
+          ${recs.map((r,i)=>`<tr>
+            <td>${i+1}</td><td>${r.date}</td><td>${r.wo}</td><td>${r.pn||'—'}</td><td>${r.pname||'—'}</td>
+            <td>${data.type==='operator'?DEPARTMENTS.find(d=>d.id===r.dept)?.label||r.dept:r.operator||'—'}</td>
+            <td>${r.toolName||'—'}</td><td>${r.startTime?.slice(11,19)||'—'}</td><td>${r.endTime||'—'}</td>
+            <td><b>${r.duration||'—'}</b></td>
+            <td>${r.defect||r.damaged?`<span class="badge-bad">⚠️</span>`:''}</td>
+          </tr>`).join('')}
+        </tbody></table>`;
+      }).join('')}`;
+  }
+
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <title>ShopTrack — ${typeLabel} — ${periodLabel}</title>
+    <style>
+      *{box-sizing:border-box}
+      body{font-family:Arial,sans-serif;padding:20px;color:#111;max-width:900px;margin:0 auto;font-size:12px}
+      h1{font-size:22px;font-weight:bold;margin:0 0 4px}
+      .subtitle{color:#555;font-size:11px;margin-bottom:16px;line-height:1.8}
+      .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+      .sum-box{border-radius:8px;padding:12px;text-align:center;border:2px solid #eee}
+      .sum-val{font-size:26px;font-weight:bold;margin-bottom:3px}
+      .sum-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px}
+      .sum-box.blue{border-color:#bfdbfe}.sum-box.blue .sum-val{color:#1d4ed8}
+      .sum-box.green{border-color:#bbf7d0}.sum-box.green .sum-val{color:#16a34a}
+      .sum-box.red{border-color:#fecaca}.sum-box.red .sum-val{color:#dc2626}
+      .sum-box.purple{border-color:#e9d5ff}.sum-box.purple .sum-val{color:#7c3aed}
+      .section-title{font-size:13px;font-weight:bold;background:#1e3a5f;color:#fff;padding:7px 12px;margin:16px 0 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px}
+      table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:11px}
+      th{background:#f3f4f6;padding:7px 8px;text-align:left;border-bottom:2px solid #ddd;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+      td{padding:7px 8px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+      tr:nth-child(even) td{background:#fafafa}
+      .badge-good{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold}
+      .badge-bad{background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold}
+      .issue-card{border:2px solid #fca5a5;border-radius:8px;padding:12px;margin-bottom:10px;break-inside:avoid}
+      .issue-card h3{font-size:13px;color:#b91c1c;margin:0 0 8px;border-bottom:1px solid #fca5a5;padding-bottom:6px}
+      .field-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;font-size:11px}
+      .lbl{font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px}
+      .tag{display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;background:#fee2e2;color:#b91c1c;margin:2px;border:1px solid #fca5a5}
+      .action-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:8px;font-size:11px;margin-top:6px}
+      .photos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+      .photos img{width:100px;height:100px;object-fit:cover;border-radius:4px;border:1px solid #ddd}
+      .footer{margin-top:20px;border-top:2px solid #1e3a5f;padding-top:8px;display:flex;justify-content:space-between;font-size:10px;color:#888}
+      .print-btn{margin-bottom:14px;padding:9px 20px;background:#1e3a5f;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:14px;font-weight:bold}
+      @media print{.print-btn{display:none}body{padding:10px}}
+    </style>
+  </head><body>
+    <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <h1>ShopTrack — ${typeLabel}</h1>
+    <div class="subtitle">
+      <b>Period:</b> ${periodLabel} &nbsp;|&nbsp;
+      <b>Generated:</b> ${today} at ${now} &nbsp;|&nbsp;
+      <b>Records:</b> ${data.records.length || data.qcChecks.length}
+    </div>
+    ${bodyHTML}
+    <div class="footer">
+      <span>ShopTrack Production System</span>
+      <span>${typeLabel} — ${periodLabel} — ${today}</span>
+    </div>
+  </body></html>`);
+  win.document.close();
+  toast('✔ Report ready — tap Print / Save as PDF','ok');
+}
+
+// ── INIT REPORTS ──
+function initReports() {
+  populateReportDepts();
+  updateReportUI();
+}
+function buildManagerFilters() {
+  const frow = document.getElementById('mgrDeptFilter');
+  const expSel = document.getElementById('mgrExportDept');
+  if (!frow || !expSel) return; // not ready yet
+  DEPARTMENTS.filter(d=>!d.isManager).forEach(d=>{
+    const chip=document.createElement('div');
+    chip.className='fchip'; chip.textContent=d.label;
+    chip.style.setProperty('--dept-color',d.color);
+    chip.onclick=()=>setMgrFilter(d.id,chip);
+    frow.appendChild(chip);
+    const opt=document.createElement('option');
+    opt.value=d.id; opt.textContent=d.label;
+    expSel.appendChild(opt);
+  });
+}
+
+function setMgrFilter(f,el) {
+  mgrFilter=f;
+  document.querySelectorAll('#mgrDeptFilter .fchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderMgrRecords();
+}
+
+function renderManager() {
+  const el=document.getElementById('mgrSummary'); if(!el) return;
+  const depts=DEPARTMENTS.filter(d=>!d.isManager);
+  // Floor-wide totals
+  let totalRunning=0, totalTools=0, totalRecs=records.length, totalDefs=defects.length;
+  depts.forEach(d=>{ const dt=allTools[d.id]||[]; totalTools+=dt.length; totalRunning+=dt.filter(t=>t.status==='run').length; });
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px">
+      <div class="mgr-stat"><div class="mgr-stat-val" style="color:var(--green)">${totalRunning}</div><div class="mgr-stat-lbl">RUNNING</div></div>
+      <div class="mgr-stat"><div class="mgr-stat-val" style="color:var(--accent)">${totalTools}</div><div class="mgr-stat-lbl">TOOLS</div></div>
+      <div class="mgr-stat"><div class="mgr-stat-val" style="color:var(--accent2)">${totalRecs}</div><div class="mgr-stat-lbl">LOGS TODAY</div></div>
+      <div class="mgr-stat"><div class="mgr-stat-val" style="color:var(--red)">${totalDefs}</div><div class="mgr-stat-lbl">DEFECTS</div></div>
+    </div>` +
+    depts.map(d=>{
+      const dt=allTools[d.id]||[];
+      const running=dt.filter(t=>t.status==='run');
+      const dRecs=records.filter(r=>r.dept===d.id).length;
+      const dDefs=defects.filter(x=>x.dept===d.id).length;
+      return `<div class="mgr-dept-card" style="--dc:${d.color}">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${d.color};border-radius:2px 0 0 2px"></div>
+        <div class="mgr-dept-name" style="color:${d.color}">${d.icon} ${d.label}</div>
+        <div class="mgr-stats">
+          <div class="mgr-stat"><div class="mgr-stat-val" style="color:var(--green)">${running.length}</div><div class="mgr-stat-lbl">ACTIVE</div></div>
+          <div class="mgr-stat"><div class="mgr-stat-val">${dt.length}</div><div class="mgr-stat-lbl">TOOLS</div></div>
+          <div class="mgr-stat"><div class="mgr-stat-val" style="color:var(--accent2)">${dRecs}</div><div class="mgr-stat-lbl">LOGS</div></div>
+          <div class="mgr-stat"><div class="mgr-stat-val" style="color:var(--red)">${dDefs}</div><div class="mgr-stat-lbl">DEFECTS</div></div>
+        </div>
+        <div class="mgr-tools-mini">
+          ${dt.map(t=>`<div class="mini-tool ${t.status==='run'?'run':''}">${t.name}${t.status==='run'?' ▶':''}</div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  renderMgrRecords();
+}
+
+function renderMgrRecords() {
+  const el=document.getElementById('mgrRecordsList'); if(!el) return;
+  let list = mgrFilter==='ALL' ? records : records.filter(r=>r.dept===mgrFilter);
+  if(!list.length){el.innerHTML='<div class="empty">No records</div>';return;}
+  const deptName=id=>DEPARTMENTS.find(d=>d.id===id)?.label||id;
+  el.innerHTML=list.slice(0,40).map(r=>{
+    const dc=DEPARTMENTS.find(d=>d.id===r.dept)?.color||'var(--accent)';
+    return `<div class="rec-item" style="border-left:3px solid ${dc}">
+      <div class="rec-hdr"><div class="rec-wo" style="color:${dc}">${r.wo}</div>
+      <div class="badge" style="color:${dc};border-color:${dc}40;background:${dc}15">${deptName(r.dept)}</div></div>
+      <div class="rec-meta">
+        <span>PN:<b>${r.pn||'—'}</b></span><span>Op:<b>${r.operator||'—'}</b></span>
+        <span>⏱<b>${r.duration||'—'}</b></span><span>${r.date}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT CSV
+// ═══════════════════════════════════════════════════════
+function exportCSV() {
+  const list = activeDept?.isManager ? records : records.filter(r=>r.dept===activeDept?.id);
+  if(!list.length){toast('No records','err');return;}
+  const hdr='Job#,Assy/P/N,Part Name,Dept Code,Status,Op Seq,Sched Qty,UOM,Sched Start,Sched Done,Dept,Operator,Tool,Date,Start Time,End Time,Duration,Defect,Notes,Synced\n';
+  const rows=list.map(r=>[
+    r.wo, r.pn, r.pname, r.deptcode||'', r.status||'', r.opseq||'',
+    r.qty||'', r.uom||'', r.schedstart||'', r.scheddone||'',
+    r.dept, r.operator, r.toolId||'',
+    r.date, r.startTime?.slice(11,19)||'', r.endTime||'', r.duration||'',
+    r.defect||'', r.notes||'', r.synced?'yes':'no'
+  ].map(f=>`"${String(f||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([hdr+rows],{type:'text/csv'}));
+  a.download=`ShopTrack_${activeDept?.id||'ALL'}_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); toast('✔ CSV exported','ok');
+}
+
+function mgrExport() {
+  const deptId=document.getElementById('mgrExportDept').value;
+  const list=deptId==='ALL' ? records : records.filter(r=>r.dept===deptId);
+  if(!list.length){toast('No records','err');return;}
+  const hdr='W/O,P/N,Part Name,Department,Operator,Date,Start,End,Duration,Defect\n';
+  const rows=list.map(r=>[r.wo,r.pn,r.pname,r.dept,r.operator,r.date,
+    r.startTime?.slice(11,19)||'',r.endTime||'',r.duration||'',r.defect||'']
+    .map(f=>`"${String(f||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([hdr+rows],{type:'text/csv'}));
+  a.download=`ShopTrack_${deptId}_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); toast('✔ Exported','ok');
+}
+
+// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// QC ROUND-BASED CHECK SYSTEM
+// ═══════════════════════════════════════════════════════
+let qcChecks     = JSON.parse(localStorage.getItem('st_qcchecks') || '[]');
+let qcResult     = null;
+let currentQCJob = null;
+function saveQCChecks() { localStorage.setItem('st_qcchecks', JSON.stringify(qcChecks)); }
+
+function populateQCToolSelect() {
+  const sel = document.getElementById('qc_tool_sel'); if (!sel) return;
+  sel.innerHTML = '<option value="">-- Select Tool --</option>' +
+    Object.entries(allTools).map(([deptId, dtools]) => {
+      const dLabel = DEPARTMENTS.find(d=>d.id===deptId)?.label || deptId;
+      return `<optgroup label="${dLabel}">` +
+        dtools.map(t=>`<option value="${t.id}">${t.name}</option>`).join('') +
+        '</optgroup>';
+    }).join('');
+}
+
+function qcScanWO() {
+  const auditor = document.getElementById('qc_auditor').value.trim();
+  const shift   = document.getElementById('qc_shift').value;
+  const toolSel = document.getElementById('qc_tool_sel');
+  const toolId  = toolSel.value;
+  const val     = document.getElementById('qc_scan').value.trim();
+  if (!auditor) { toast('Enter your name first','err'); return; }
+  if (!shift)   { toast('Select your shift','err'); return; }
+  if (!toolId)  { toast('Select a tool first','err'); return; }
+  if (!val)     { toast('Scan a W/O barcode','err'); return; }
+  const wo = woDb[val] || woDb[val.toUpperCase()];
+  currentQCJob = {
+    wo: val, pn: wo?.pn||'', pname: wo?.name||'',
+    toolId, toolName: toolSel.options[toolSel.selectedIndex]?.text || toolId,
+    auditor, shift,
+    time: new Date().toLocaleTimeString('en-US',{hour12:false}),
+    date: new Date().toLocaleDateString('en-US'),
+  };
+  setField('qc_wo',    currentQCJob.wo);
+  setField('qc_pn',    currentQCJob.pn);
+  setField('qc_pname', currentQCJob.pname);
+  qcResult = null;
+  document.getElementById('qbtn-pass').className  = 'qc-big-btn qc-big-pass';
+  document.getElementById('qbtn-issue').className = 'qc-big-btn qc-big-issue';
+  document.getElementById('qcIssueBlock').style.display = 'none';
+  const sb = document.getElementById('qcSaveBtn');
+  sb.disabled = true; sb.style.opacity = '.4';
+  document.getElementById('qc_supervisor').value = '';
+  document.getElementById('qc_action').value = '';
+  document.querySelectorAll('#issueTypeList input').forEach(cb => cb.checked = false);
+  photos.qccheck = [];
+  renderPGrid('pg-qccheck','qccheck');
+  document.getElementById('qcWOBlock').style.display = 'block';
+  if (!wo && Object.keys(woDb).length > 0) toast('W/O not in database — verify manually','inf');
+  else toast('✔ W/O loaded at ' + currentQCJob.toolName,'ok');
+  setTimeout(()=>document.getElementById('qcWOBlock').scrollIntoView({behavior:'smooth'}),150);
+}
+
+function setQCResult(result) {
+  qcResult = result;
+  document.getElementById('qbtn-pass').className  = 'qc-big-btn qc-big-pass'  + (result==='PASS'  ? ' selected':'');
+  document.getElementById('qbtn-issue').className = 'qc-big-btn qc-big-issue' + (result==='ISSUE' ? ' selected':'');
+  document.getElementById('qcIssueBlock').style.display = result==='ISSUE' ? 'block':'none';
+  const sb = document.getElementById('qcSaveBtn');
+  sb.disabled = false; sb.style.opacity = '1';
+  if (result==='ISSUE') setTimeout(()=>document.getElementById('qcIssueBlock').scrollIntoView({behavior:'smooth'}),150);
+}
+
+function saveQCCheck() {
+  if (!currentQCJob) { toast('Scan a W/O first','err'); return; }
+  if (!qcResult)     { toast('Select Good or Issue','err'); return; }
+  // Save QC name to shift memory so it auto-fills next round
+  const auditorEl = document.getElementById('qc_auditor');
+  if (auditorEl && auditorEl.value.trim()) saveShiftName(auditorEl.value.trim());
+  let issueTypes = [];
+  if (qcResult === 'ISSUE') {
+    document.querySelectorAll('#issueTypeList input:checked').forEach(cb => issueTypes.push(cb.value));
+    if (!issueTypes.length) { toast('Select what the problem is','err'); return; }
+    if (!document.getElementById('qc_supervisor').value.trim()) { toast('Enter supervisor name','err'); return; }
+  }
+  const check = {
+    id: Date.now(), ...currentQCJob, result: qcResult, issueTypes,
+    supervisor: document.getElementById('qc_supervisor').value.trim(),
+    action:     document.getElementById('qc_action').value.trim(),
+    photos:     [...(photos.qccheck||[])], synced: false,
+  };
+  qcChecks.unshift(check);
+  saveQCChecks();
+  updateQCShiftSummary();
+  renderQCRoundLog();
+  document.getElementById('qc_scan').value = '';
+  document.getElementById('qcWOBlock').style.display = 'none';
+  photos.qccheck = []; currentQCJob = null; qcResult = null;
+  toast(check.result==='PASS'?'✅ Good check saved!':'🚨 Issue logged!', check.result==='PASS'?'ok':'err');
+}
+
+function updateQCShiftSummary() {
+  const auditor = document.getElementById('qc_auditor')?.value.trim()||'';
+  const shift   = document.getElementById('qc_shift')?.value||'';
+  const today   = new Date().toLocaleDateString('en-US');
+  const mine    = qcChecks.filter(c=>c.auditor===auditor&&c.shift===shift&&c.date===today);
+  if (!mine.length) { document.getElementById('qcShiftSummary').style.display='none'; return; }
+  document.getElementById('qcShiftSummary').style.display='block';
+  document.getElementById('qcTotalChecks').textContent = mine.length;
+  document.getElementById('qcTotalPass').textContent   = mine.filter(c=>c.result==='PASS').length;
+  document.getElementById('qcTotalIssues').textContent = mine.filter(c=>c.result==='ISSUE').length;
+}
+
+function renderQCRoundLog() {
+  const el = document.getElementById('qcRoundLog'); if (!el) return;
+  const auditor = document.getElementById('qc_auditor')?.value.trim()||'';
+  const shift   = document.getElementById('qc_shift')?.value||'';
+  const today   = new Date().toLocaleDateString('en-US');
+  const mine    = qcChecks.filter(c=>(!auditor||c.auditor===auditor)&&(!shift||c.shift===shift)&&c.date===today);
+  if (!mine.length) { el.innerHTML='<div class="empty"><div class="ei">🔍</div>No checks yet — start scanning tools!</div>'; return; }
+  el.innerHTML = mine.map(c=>`
+    <div class="qc-round-item ${c.result==='PASS'?'good':'issue'}">
+      <div class="qc-round-hdr">
+        <div class="qc-round-wo">${c.wo}</div>
+        <div class="badge ${c.result==='PASS'?'b-run':'b-warn'}">${c.result==='PASS'?'✅ GOOD':'🚨 ISSUE'}</div>
+      </div>
+      <div style="font-family:var(--fm);font-size:11px;color:var(--text);margin-bottom:4px">${c.pname||c.pn||'—'}</div>
+      <div class="qc-round-meta">
+        <span>🔧 <b>${c.toolName}</b></span>
+        <span>P/N: <b>${c.pn||'—'}</b></span>
+        <span>🕐 <b>${c.time}</b></span>
+        <span>${c.shift}</span>
+      </div>
+      ${c.issueTypes?.length?`<div class="issue-tags">${c.issueTypes.map(t=>`<div class="issue-tag">⚠️ ${t}</div>`).join('')}</div>`:''}
+      ${c.supervisor?`<div style="font-size:10px;color:var(--muted);margin-top:5px;font-family:var(--fm)">Supervisor: <b style="color:var(--text)">${c.supervisor}</b></div>`:''}
+      ${c.action?`<div style="font-size:10px;color:var(--muted);margin-top:3px;font-family:var(--fm)">Action: ${c.action}</div>`:''}
+      ${c.photos?.length?`<div class="rec-photos" style="margin-top:7px">${c.photos.map(p=>`<img src="${p}" onclick="prevImg('${p.replace(/'/g,"\\'")}')" style="border-radius:5px">`).join('')}</div>`:''}
+    </div>`).join('');
+}
+
+function exportShiftReport() {
+  const auditor = document.getElementById('qc_auditor').value.trim();
+  const shift   = document.getElementById('qc_shift').value;
+  if (!auditor) { toast('Enter your name first','err'); return; }
+  if (!shift)   { toast('Select your shift','err'); return; }
+  const today  = new Date().toLocaleDateString('en-US');
+  const mine   = qcChecks.filter(c=>c.auditor===auditor&&c.shift===shift&&c.date===today);
+  if (!mine.length) { toast('No checks to report yet','err'); return; }
+  const passed = mine.filter(c=>c.result==='PASS').length;
+  const issues = mine.filter(c=>c.result==='ISSUE');
+  const dept   = activeDept?.label||'';
+  const toolsChecked = [...new Set(mine.map(c=>c.toolName))];
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <title>QC Shift Report — ${auditor} — ${shift} — ${today}</title>
+    <style>
+      *{box-sizing:border-box}
+      body{font-family:Arial,sans-serif;padding:24px;color:#111;max-width:850px;margin:0 auto;font-size:13px}
+      h1{font-size:24px;font-weight:bold;margin:0 0 4px}
+      .subtitle{color:#555;font-size:12px;margin-bottom:20px;line-height:2}
+      .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+      .sum-box{border:2px solid #ddd;border-radius:8px;padding:14px;text-align:center}
+      .sum-val{font-size:30px;font-weight:bold;margin-bottom:4px}
+      .sum-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px}
+      .sum-box.total{border-color:#3b82f6}.sum-box.total .sum-val{color:#3b82f6}
+      .sum-box.good{border-color:#10b981}.sum-box.good .sum-val{color:#10b981}
+      .sum-box.bad{border-color:#ef4444}.sum-box.bad .sum-val{color:#ef4444}
+      .sum-box.tools{border-color:#8b5cf6}.sum-box.tools .sum-val{color:#8b5cf6}
+      .section-title{font-size:14px;font-weight:bold;background:#111;color:#fff;padding:8px 12px;margin:20px 0 10px;letter-spacing:1px;text-transform:uppercase}
+      table{width:100%;border-collapse:collapse;margin-bottom:20px}
+      th{background:#f3f4f6;padding:9px 10px;text-align:left;font-size:11px;border-bottom:2px solid #ddd;text-transform:uppercase;letter-spacing:.5px}
+      td{padding:9px 10px;border-bottom:1px solid #eee;font-size:12px;vertical-align:top}
+      tr:nth-child(even) td{background:#fafafa}
+      .badge-good{background:#d1fae5;color:#065f46;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap}
+      .badge-issue{background:#fee2e2;color:#b91c1c;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap}
+      .issue-card{border:2px solid #ef4444;border-radius:8px;padding:14px;margin-bottom:14px;break-inside:avoid}
+      .issue-card h3{margin:0 0 10px;font-size:15px;color:#b91c1c;border-bottom:1px solid #fca5a5;padding-bottom:6px}
+      .field-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+      .field-box .lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+      .field-box .val{font-size:13px;font-weight:600}
+      .tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;background:#fee2e2;color:#b91c1c;margin:2px;border:1px solid #fca5a5}
+      .action-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:5px;padding:9px;font-size:12px;margin-top:8px}
+      .photos-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+      .photos-row img{width:120px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ddd}
+      .all-clear{background:#f0fdf4;border:2px solid #86efac;border-radius:8px;padding:18px;text-align:center;color:#166534;font-size:16px;font-weight:bold;margin-bottom:20px}
+      .footer{margin-top:28px;border-top:2px solid #111;padding-top:10px;display:flex;justify-content:space-between;font-size:11px;color:#555}
+      .print-btn{margin-bottom:16px;padding:10px 22px;background:#111;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:14px;font-weight:bold}
+      @media print{.print-btn{display:none}body{padding:10px}}
+    </style>
+  </head><body>
+    <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <h1>QC Shift Report</h1>
+    <div class="subtitle">
+      <strong>Inspector:</strong> ${auditor} &nbsp;&nbsp;
+      <strong>Shift:</strong> ${shift} &nbsp;&nbsp;
+      <strong>Department:</strong> ${dept} &nbsp;&nbsp;
+      <strong>Date:</strong> ${today}<br>
+      <strong>Tools Checked:</strong> ${toolsChecked.join(', ')||'—'} &nbsp;&nbsp;
+      <strong>Report Generated:</strong> ${new Date().toLocaleTimeString()}
+    </div>
+
+    <div class="summary">
+      <div class="sum-box total"><div class="sum-val">${mine.length}</div><div class="sum-lbl">Total Checks</div></div>
+      <div class="sum-box good"><div class="sum-val">${passed}</div><div class="sum-lbl">✅ Good</div></div>
+      <div class="sum-box bad"><div class="sum-val">${issues.length}</div><div class="sum-lbl">🚨 Issues</div></div>
+      <div class="sum-box tools"><div class="sum-val">${toolsChecked.length}</div><div class="sum-lbl">Tools Checked</div></div>
+    </div>
+
+    <div class="section-title">All Checks — Chronological Log</div>
+    <table>
+      <thead><tr><th>#</th><th>Time</th><th>Tool / Machine</th><th>Job # / W/O</th><th>P/N</th><th>Part Name</th><th>Result</th></tr></thead>
+      <tbody>
+        ${[...mine].reverse().map((c,i)=>`
+          <tr>
+            <td>${i+1}</td><td>${c.time}</td><td><b>${c.toolName}</b></td>
+            <td>${c.wo}</td><td>${c.pn||'—'}</td><td>${c.pname||'—'}</td>
+            <td><span class="${c.result==='PASS'?'badge-good':'badge-issue'}">${c.result==='PASS'?'✅ GOOD':'🚨 ISSUE'}</span></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+
+    ${issues.length ? `
+      <div class="section-title">⚠️ Issues Detail (${issues.length} found)</div>
+      ${issues.map((c,i)=>`
+        <div class="issue-card">
+          <h3>Issue #${i+1} — ${c.toolName} at ${c.time}</h3>
+          <div class="field-grid">
+            <div class="field-box"><div class="lbl">Job # / W/O</div><div class="val">${c.wo}</div></div>
+            <div class="field-box"><div class="lbl">P/N</div><div class="val">${c.pn||'—'}</div></div>
+            <div class="field-box"><div class="lbl">Part Name</div><div class="val">${c.pname||'—'}</div></div>
+            <div class="field-box"><div class="lbl">Supervisor Notified</div><div class="val">${c.supervisor||'—'}</div></div>
+            <div class="field-box"><div class="lbl">Inspector</div><div class="val">${c.auditor}</div></div>
+            <div class="field-box"><div class="lbl">Shift</div><div class="val">${c.shift}</div></div>
+          </div>
+          ${c.issueTypes?.length?`<div style="margin-bottom:8px"><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Problems Found</div>${c.issueTypes.map(t=>`<span class="tag">⚠️ ${t}</span>`).join('')}</div>`:''}
+          ${c.action?`<div class="action-box"><b>Action Taken:</b> ${c.action}</div>`:''}
+          ${c.photos?.length?`<div><div style="font-size:10px;color:#888;text-transform:uppercase;margin:10px 0 5px">Evidence Photos (${c.photos.length})</div><div class="photos-row">${c.photos.map(p=>`<img src="${p}">`).join('')}</div></div>`:''}
+        </div>`).join('')}`
+    : `<div class="all-clear">✅ No issues found this shift — all tools running good quality parts!</div>`}
+
+    <div class="footer">
+      <span>ShopTrack QC System — ${dept}</span>
+      <span>Inspector: ${auditor} | ${shift} | ${today}</span>
+      <span>Total checks: ${mine.length} | Issues: ${issues.length}</span>
+    </div>
+  </body></html>`);
+  win.document.close();
+  toast('✔ Shift report ready — use Print > Save as PDF','ok');
+}
+
+function initQCTab() {
+  populateQCToolSelect();
+  renderQCRoundLog();
+  updateQCShiftSummary();
+  // Auto-fill QC name from shift memory
+  const shiftName = getShiftName();
+  if (shiftName) {
+    const el1 = document.getElementById('qc_auditor');
+    if (el1 && !el1.value) el1.value = shiftName;
+  }
+}
+
+function initMSAL() {
+  if (!config.clientId||!config.tenantId) return;
+  try {
+    msalInstance = new msal.PublicClientApplication({
+      auth:{ clientId:config.clientId, authority:`https://login.microsoftonline.com/${config.tenantId}`, redirectUri:window.location.href.split('?')[0] },
+      cache:{ cacheLocation:'localStorage' }
+    });
+    msalInstance.handleRedirectPromise().then(resp=>{
+      if(resp){ currentAccount=resp.account; graphToken=resp.accessToken; onSignedIn(); }
+      else { const accs=msalInstance.getAllAccounts(); if(accs.length){ currentAccount=accs[0]; acquireToken(); } }
+    }).catch(console.warn);
+  } catch(e){ console.warn(e); }
+}
+
+function signIn() {
+  if(!msalInstance){ toast('Configure Azure credentials in Settings','err'); return; }
+  msalInstance.loginPopup({scopes:['User.Read','Sites.ReadWrite.All','Files.ReadWrite.All']})
+    .then(r=>{ currentAccount=r.account; graphToken=r.accessToken; onSignedIn(); })
+    .catch(e=>{ console.warn(e); toast('Sign-in failed','err'); });
+}
+
+function signOut() {
+  if(msalInstance&&currentAccount){ msalInstance.logoutPopup({account:currentAccount}); currentAccount=null; graphToken=null; updateCloudStatus('off'); }
+}
+
+function acquireToken() {
+  msalInstance.acquireTokenSilent({scopes:['Sites.ReadWrite.All','Files.ReadWrite.All'],account:currentAccount})
+    .then(r=>{ graphToken=r.accessToken; onSignedIn(); })
+    .catch(()=>msalInstance.acquireTokenPopup({scopes:['Sites.ReadWrite.All','Files.ReadWrite.All']})
+      .then(r=>{ graphToken=r.accessToken; onSignedIn(); }).catch(console.warn));
+}
+
+function onSignedIn() {
+  updateCloudStatus('on');
+  const name=currentAccount?.name||currentAccount?.username||'';
+  toast('✔ Signed in: '+name,'ok');
+  updateSettingsStatus();
+  if(config.excelFile) loadWOFromSharePoint();
+}
+
+function updateCloudStatus(s) {
+  const row=document.getElementById('cloudRow'); const txt=document.getElementById('cloudTxt');
+  if(!row||!txt) return;
+  const map={on:['sok','● Connected to SharePoint'],off:['serr','● Not signed in'],sync:['spend','● Syncing…'],err:['serr','● Error']};
+  const [cls,label]=map[s]||['spend','● Unknown'];
+  row.firstElementChild.className=cls; txt.textContent=label;
+}
+
+function updateSettingsStatus() {
+  const el=document.getElementById('settingsStatus'); if(!el) return;
+  el.innerHTML=currentAccount
+    ? `<div class="badge b-run"><span class="dot"></span>Signed in as ${currentAccount.name||currentAccount.username}</div>`
+    : `<div class="badge b-idle">● Not signed in</div>`;
+}
+
+async function graphReq(ep,method='GET',body=null) {
+  if(!graphToken) return null;
+  try {
+    const r=await fetch('https://graph.microsoft.com/v1.0'+ep,{method,headers:{'Authorization':'Bearer '+graphToken,'Content-Type':'application/json'},body:body?JSON.stringify(body):null});
+    if(!r.ok) return null;
+    return method==='DELETE'?true:await r.json();
+  } catch(e){ return null; }
+}
+
+async function getSiteId() {
+  if(config._siteId) return config._siteId;
+  if(!config.siteUrl) return null;
+  const u=new URL(config.siteUrl);
+  const r=await graphReq(`/sites/${u.hostname}:${u.pathname}`);
+  if(r?.id){ config._siteId=r.id; localStorage.setItem('st_config',JSON.stringify(config)); return r.id; }
+  return null;
+}
+
+async function getDriveId(sid) {
+  if(config._driveId) return config._driveId;
+  const r=await graphReq(`/sites/${sid}/drive`);
+  if(r?.id){ config._driveId=r.id; localStorage.setItem('st_config',JSON.stringify(config)); return r.id; }
+  return null;
+}
+
+async function loadWOFromSharePoint() {
+  if (!graphToken) return;
+  updateCloudStatus('sync');
+  try {
+    const sid = await getSiteId();
+    const did = await getDriveId(sid);
+    if (!sid || !did) { updateCloudStatus('err'); return; }
+
+    // Each dept has its own Master Schedule file
+    const deptFileMap = {
+      'InjectionMold':  'Master Schedule - Injection',
+      'Fiber':          'Master Schedule - Fiber',
+      'StructureMold':  'Master Schedule - Structure Mold',
+      'BlowMold':       'Master Schedule - Blow Mold',
+      'Metals':         'Master Schedule - Metals',
+      'SMC':            'Master Schedule - SMC',
+      'QC':             'Master Schedule - Injection', // QC reads all — default to Injection
+    };
+
+    // If manager — load ALL dept files
+    const deptsToLoad = activeDept?.isManager
+      ? Object.entries(deptFileMap).filter(([k]) => k !== 'QC')
+      : [[activeDept.id, deptFileMap[activeDept.id] || config.excelFile]];
+
+    woDb = JSON.parse(localStorage.getItem('st_wo_cache') || '{}');
+
+    for (const [deptId, filename] of deptsToLoad) {
+      if (!filename) continue;
+      try {
+        // Search for the file
+        const search = await graphReq(`/drives/${did}/root/search(q='${encodeURIComponent(filename)}')`);
+        if (!search?.value?.length) { console.warn('File not found:', filename); continue; }
+
+        // Prefer .xlsm files
+        const file = search.value.find(f => f.name.toLowerCase().includes('master schedule')) || search.value[0];
+        const fid  = file.id;
+
+        // Get first worksheet
+        const sheets = await graphReq(`/drives/${did}/items/${fid}/workbook/worksheets`);
+        if (!sheets?.value?.length) continue;
+
+        // Use the dept tab — "Injection", "Fiber" etc.
+        const tabName = sheets.value[0].name; // default first tab
+        const data = await graphReq(`/drives/${did}/items/${fid}/workbook/worksheets/${encodeURIComponent(tabName)}/usedRange`);
+        if (!data?.values) continue;
+
+        const rows = data.values;
+
+        // Match exact columns from Master Schedule:
+        // A=Machine, B=PPH, C=Setup, D=Part Number, E=Description
+        // F=Balance, G=Complete, H=Status, I=Date, J=Sch Group
+        // K=BOM, L=Mold, M=Mold Can Go, N=Notes, O=Run, P=Total, Q=End
+        // Row 1 is header, rows starting with "Machine #" are section headers — skip them
+        // Job # (W/O) is in column A when it starts with "DS-"
+
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          const wo = String(r[0] || '').trim();
+
+          // Only process rows where col A looks like a Job # (DS-XXXXXXX or AP-XXXXXXX etc.)
+          if (!wo || !wo.match(/^[A-Z]{2,3}-\d+/i)) continue;
+
+          woDb[wo] = {
+            wo,
+            machine:   String(r[0]  || '').trim(),   // Col A — also the job #
+            pph:       String(r[1]  || '').trim(),   // Col B — PPH
+            setup:     String(r[2]  || '').trim(),   // Col C — Setup
+            pn:        String(r[3]  || '').trim(),   // Col D — Part Number
+            name:      String(r[4]  || '').trim(),   // Col E — Description
+            balance:   String(r[5]  || '').trim(),   // Col F — Balance
+            complete:  String(r[6]  || '').trim(),   // Col G — Complete
+            status:    String(r[7]  || '').trim(),   // Col H — Status
+            scheddate: String(r[8]  || '').trim(),   // Col I — Date
+            schgroup:  String(r[9]  || '').trim(),   // Col J — Sch Group
+            bom:       String(r[10] || '').trim(),   // Col K — BOM
+            mold:      String(r[11] || '').trim(),   // Col L — Mold #
+            moldcango: String(r[12] || '').trim(),   // Col M — Mold Can Go
+            notes:     String(r[13] || '').trim(),   // Col N — Notes
+            run:       String(r[14] || '').trim(),   // Col O — Run qty
+            total:     String(r[15] || '').trim(),   // Col P — Total
+            enddate:   String(r[16] || '').trim(),   // Col Q — End date
+            dept:      deptId,
+            specrev:   String(r[3]  || '').trim(),   // Use P/N as spec ref for now
+          };
         }
+      } catch(e) { console.warn('Error loading', filename, e); }
+    }
 
-        function selectDept(id) {
-            activeDept = DEPARTMENTS.find(d => d.id === id);
-            if(activeDept.pin) {
-                document.getElementById('pinArea').style.display = 'block';
-            } else {
-                launchApp();
-            }
-        }
+    localStorage.setItem('st_wo_cache', JSON.stringify(woDb));
+    updateCloudStatus('on');
+    const count = Object.keys(woDb).length;
+    toast(`✔ ${count} work orders loaded from Master Schedule`, 'ok');
 
-        function launchApp() {
-            document.getElementById('deptScreen').classList.add('hidden');
-            document.getElementById('mainApp').style.display = 'flex';
-            document.getElementById('deptChip').textContent = activeDept.label;
-            document.documentElement.style.setProperty('--accent', activeDept.color);
-        }
+  } catch(e) { console.warn(e); updateCloudStatus('err'); }
+}
 
-        function openScanner() {
-            document.getElementById('scannerModal').style.display = 'flex';
-            showScanState('ready');
-        }
+async function saveRecordCloud(rec) {
+  if(!graphToken||!config.siteUrl) return;
+  try {
+    const sid=await getSiteId(); const did=await getDriveId(sid); if(!sid||!did) return;
+    const folder=config.outputFolder||'ShopTrack Data';
+    const today=new Date().toISOString().split('T')[0];
+    const line=[rec.wo,rec.pn,rec.pname,rec.dept,rec.operator,rec.date,rec.startTime?.slice(11,19)||'',rec.endTime||'',rec.duration||'',rec.defect||'',rec.notes||'']
+      .map(f=>`"${String(f||'').replace(/"/g,'""')}"`).join(',')+'\n';
+    await fetch(`https://graph.microsoft.com/v1.0/drives/${did}/root:/${folder}/Log_${rec.dept}_${today}.csv:/content`,
+      {method:'PUT',headers:{'Authorization':'Bearer '+graphToken,'Content-Type':'text/plain'},body:line});
+  } catch(e){console.warn(e);}
+}
 
-        function closeScanner() {
-            document.getElementById('scannerModal').style.display = 'none';
-        }
+async function uploadPhoto(b64,fname,sub) {
+  if(!graphToken||!config.siteUrl) return null;
+  try {
+    const sid=await getSiteId(); const did=await getDriveId(sid); if(!sid||!did) return null;
+    const folder=(config.outputFolder||'ShopTrack Data')+'/Photos/'+sub;
+    const bin=atob(b64.split(',')[1]); const arr=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+    const r=await fetch(`https://graph.microsoft.com/v1.0/drives/${did}/root:/${folder}/${fname}:/content`,
+      {method:'PUT',headers:{'Authorization':'Bearer '+graphToken,'Content-Type':'image/jpeg'},body:arr});
+    const d=await r.json(); return d?.webUrl||null;
+  } catch(e){return null;}
+}
 
-        function showScanState(state) {
-            document.getElementById('scanState_ready').style.display = state === 'ready' ? 'flex' : 'none';
-            document.getElementById('scanState_reading').style.display = state === 'reading' ? 'flex' : 'none';
-        }
+async function syncCloud() {
+  if(!graphToken){toast('Sign in to Microsoft first','err');return;}
+  let ok=0;
+  for(const r of records){ await saveRecordCloud(r); r.synced=true; ok++; }
+  saveRecords(); toast(`✔ Synced ${ok} records`,'ok');
+}
 
-        async function handleWOPhoto(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+// ═══════════════════════════════════════════════════════
+// MISC
+// ═══════════════════════════════════════════════════════
+function updateCounts() {
+  const deptRecs=activeDept?.isManager?records:records.filter(r=>r.dept===activeDept?.id);
+  const deptDefs=activeDept?.isManager?defects:defects.filter(d=>d.dept===activeDept?.id);
+  const ir=document.getElementById('infoRec'); const id=document.getElementById('infoDef');
+  if(ir) ir.textContent=deptRecs.length; if(id) id.textContent=deptDefs.length;
+}
 
-            showScanState('reading');
-            document.getElementById('scanProgress').style.width = '30%';
+function clearData() {
+  if(!confirm('Delete ALL local data?')) return;
+  records=[]; defects=[]; saveRecords(); saveDefects();
+  renderRecords(); renderDefects(); updateCounts(); toast('Cleared','inf');
+}
 
-            try {
-                const result = await Tesseract.recognize(file, 'eng', {
-                    logger: m => {
-                        if(m.status === 'recognizing text') {
-                            document.getElementById('scanProgress').style.width = (m.progress * 100) + '%';
-                        }
-                    }
-                });
+function toast(msg,type='') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast '+(type==='ok'?'ok':type==='err'?'err':type==='inf'?'inf':'');
+  el.classList.add('show'); clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),3000);
+}
 
-                const text = result.data.text;
-                console.log("Scanned Text:", text);
+// ═══════════════════════════════════════════════════════
+// AI W/O PHOTO READER
+// ═══════════════════════════════════════════════════════
+let scannerCallback = null;
+let scannedWOData   = null;
 
-                // Look for Job # pattern (e.g., DS-1234567)
-                const woMatch = text.match(/([A-Z]{2,3}-\d{7})/i);
-                
-                if (woMatch) {
-                    const wo = woMatch[0].toUpperCase();
-                    document.getElementById('f_wo').value = wo;
-                    document.getElementById('scanInput').value = wo;
-                    document.getElementById('woBlock').style.display = 'block';
-                    closeScanner();
-                    toast("Job Found: " + wo);
-                } else {
-                    alert("Could not find a Job # in the photo. Please try again or type it manually.");
-                    showScanState('ready');
-                }
-            } catch (e) {
-                alert("Scanner Error: " + e.message);
-                showScanState('ready');
-            }
-        }
+function openScanner(callback) {
+  scannerCallback = callback;
+  document.getElementById('scannerModal').style.display = 'flex';
+  resetScanner();
+  setTimeout(() => document.getElementById('scannerManualInput')?.focus(), 400);
+}
 
-        function startSession() {
-            toast("Job Started!");
-        }
+function closeScanner() {
+  document.getElementById('scannerModal').style.display = 'none';
+}
 
-        function toast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
+function resetScanner() {
+  showScanState('ready');
+  document.getElementById('woPhotoInput').value = '';
+  document.getElementById('scannerManualInput').value = '';
+  scannedWOData = null;
+}
 
-        function changeDept() {
-            location.reload();
-        }
+function showScanState(state) {
+  ['ready','reading','results','error'].forEach(s => {
+    const el = document.getElementById('scanState_' + s);
+    if (el) el.style.display = s === state ? 'flex' : 'none';
+  });
+}
 
-        init();
-    </script>
+async function handleWOPhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Show reading state
+  showScanState('reading');
+  document.getElementById('scanReadingMsg').textContent = 'AI is reading your W/O paper…';
+  animateScanProgress();
+
+  // Show photo preview
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('woPhotoPreview');
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+
+  // Convert to base64 for API
+  try {
+    const base64 = await fileToBase64(file);
+    const mimeType = file.type || 'image/jpeg';
+    await readWOWithAI(base64, mimeType);
+  } catch(e) {
+    showScanError('Could not read photo', e.message || 'Please try again with better lighting and a steady hand');
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function animateScanProgress() {
+  const bar = document.getElementById('scanProgress');
+  if (!bar) return;
+  let pct = 0;
+  const steps = [20,45,65,80,90];
+  let i = 0;
+  const tick = () => {
+    if (i < steps.length) {
+      bar.style.width = steps[i++] + '%';
+      setTimeout(tick, 600);
+    }
+  };
+  tick();
+}
+
+async function readWOWithAI(base64, mimeType) {
+  document.getElementById('scanReadingMsg').textContent = 'Extracting job details…';
+
+  if (!getApiKey()) {
+    throw new Error('No API key set — go to ⚙️ Settings and add your API key first');
+  }
+
+  const prompt = `You are reading a manufacturing Work Order paper called "Discrete Job Routine Report" from Rockwall company.
+
+Extract ONLY these exact fields and return them as a JSON object with no extra text:
+
+{
+  "wo": "the Job number at the top (can start with DS-, AP-, DL-, or other 2-3 letter prefix followed by numbers, e.g. DS-1810118, AP-1792145, DL-1874162)",
+  "pn": "the Spec Num OR Assy field — this is the part number (e.g. M013-BFBK or BU1730-009)",
+  "pname": "the Assy Desc field — full part description text",
+  "dept": "the Department code (e.g. 1300R, 1370R, 1400R)",
+  "specrev": "the Spec Rev field — usually a single letter like C or E",
+  "qty": "the Scheduled Qty number only (no units)",
+  "opseq": "the Op Seq number (e.g. 10)",
+  "schedgroup": "the Sched Group field (e.g. IM05, StrfoanM003)",
+  "schedstart": "Scheduled Start date",
+  "scheddone": "Scheduled Done or complete date",
+  "drawrev": "Draw Rev field if visible",
+  "status": "Status field (e.g. Released)"
+}
+
+Critical rules:
+- Return ONLY the raw JSON, no markdown, no backticks, no explanation
+- The Job # is the LARGE number/barcode area at the top — it may start with DS-, AP-, or similar
+- If a field is not visible write ""
+- Do not guess — only extract what you can clearly read`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': getApiKey(),
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
+          { type: 'text',  text: prompt }
+        ]
+      }]
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error?.message || 'API error ' + response.status);
+  }
+
+  const data = await response.json();
+  const text = data.content?.map(c => c.text || '').join('').trim();
+
+  // Parse JSON from response
+  let parsed;
+  try {
+    const clean = text.replace(/```json|```/g,'').trim();
+    parsed = JSON.parse(clean);
+  } catch(e) {
+    throw new Error('Could not parse the W/O — please try a clearer photo');
+  }
+
+  if (!parsed.wo) throw new Error('Job # not found — make sure the top of the W/O paper is visible');
+
+  // Store and show results
+  scannedWOData = parsed;
+  document.getElementById('scanProgress').style.width = '100%';
+  setTimeout(() => showScanResults(parsed), 300);
+}
+
+function showScanResults(data) {
+  const fields = [
+    { key:'wo',          label:'Job # / W/O',       icon:'📋', required:true  },
+    { key:'pn',          label:'Part Number (P/N)',  icon:'🔢', required:true  },
+    { key:'pname',       label:'Part Name',          icon:'🏷️', required:false },
+    { key:'specrev',     label:'Spec / Draw Rev',    icon:'📐', required:false },
+    { key:'qty',         label:'Scheduled Qty',      icon:'📦', required:false },
+    { key:'dept',        label:'Department Code',    icon:'🏭', required:false },
+    { key:'schedgroup',  label:'Sched Group',        icon:'📅', required:false },
+    { key:'status',      label:'Status',             icon:'✅', required:false },
+  ];
+
+  document.getElementById('scanResultFields').innerHTML = fields.map(f => `
+    <div style="background:#fff;border:1.5px solid ${data[f.key]?'#d1fae5':'#fee2e2'};border-radius:10px;padding:12px;border-left:4px solid ${data[f.key]?'#16a34a':'#f59e0b'}">
+      <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${f.icon} ${f.label}</div>
+      <input type="text" value="${data[f.key]||''}"
+        oninput="scannedWOData['${f.key}']=this.value"
+        style="width:100%;border:none;background:transparent;font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:${data[f.key]?'#111':'#9ca3af'};outline:none;padding:0"
+        placeholder="${data[f.key]?'':'Not found — tap to enter'}">
+    </div>`).join('');
+
+  showScanState('results');
+}
+
+function confirmScannedWO() {
+  if (!scannedWOData?.wo) { toast('W/O number is required','err'); return; }
+
+  // Store in woDb so lookupWO can find it
+  woDb[scannedWOData.wo] = {
+    wo:        scannedWOData.wo,
+    pn:        scannedWOData.pn,
+    name:      scannedWOData.pname,
+    dept:      scannedWOData.dept,
+    specrev:   scannedWOData.specrev,
+    qty:       scannedWOData.qty,
+    schgroup:  scannedWOData.schedgroup,
+    scheddate: scannedWOData.schedstart,
+    enddate:   scannedWOData.scheddone,
+    source:    'photo-scan',
+  };
+  // Save to local cache
+  localStorage.setItem('st_wo_cache', JSON.stringify(woDb));
+
+  closeScanner();
+  if (scannerCallback) scannerCallback(scannedWOData.wo);
+}
+
+function showScanError(title, detail) {
+  document.getElementById('scanErrorMsg').textContent    = title;
+  document.getElementById('scanErrorDetail').textContent = detail;
+  showScanState('error');
+}
+
+function getShiftName() {
+  try {
+    const data = JSON.parse(localStorage.getItem('st_shiftName') || '{}');
+    const today = new Date().toLocaleDateString('en-US');
+    return data.date === today ? data.name : '';
+  } catch(e) { return ''; }
+}
+
+function saveShiftName(name) {
+  const today = new Date().toLocaleDateString('en-US');
+  localStorage.setItem('st_shiftName', JSON.stringify({ name, date: today }));
+}
+
+function getApiKey() {
+  return localStorage.getItem('st_apikey') || '';
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput')?.value.trim();
+  if (!key) { toast('Please enter an API key', 'err'); return; }
+  localStorage.setItem('st_apikey', key);
+  document.getElementById('apiKeyInput').value = '';
+  toast('✅ API key saved! Photo scanning is now active!', 'ok');
+  document.getElementById('apiKeyStatus').textContent = '✅ API key is set';
+  document.getElementById('apiKeyStatus').style.color = '#16a34a';
+}
+
+function confirmManualScan() {
+  const val = document.getElementById('scannerManualInput').value.trim();
+  if (!val) { document.getElementById('scannerManualInput').focus(); toast('Type the W/O number','err'); return; }
+  closeScanner();
+  if (scannerCallback) scannerCallback(val.toUpperCase());
+}
+
+function triggerMainScan() {
+  openScanner(value => {
+    document.getElementById('scanInput').value = value;
+    lookupWO();
+  });
+}
+
+function triggerQCScan() {
+  openScanner(value => {
+    document.getElementById('qc_scan').value = value;
+    qcScanWO();
+  });
+}
+
+loadAllTools();
+loadRecords();
+loadDefects();
+woDb = JSON.parse(localStorage.getItem('st_wo_cache')||'{}');
+buildDeptScreen();
+
+// Wire scan buttons reliably for Android Chrome
+function wireScanButtons() {
+  const mainBtn = document.getElementById('mainScanBtn');
+  const qcBtn   = document.getElementById('qcScanBtn');
+  const photoBtn = document.getElementById('woPhotoBtn');
+  if (photoBtn && !photoBtn._wired) {
+    photoBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); document.getElementById('woPhotoInput').click(); });
+    photoBtn._wired = true;
+  }
+  if (mainBtn && !mainBtn._wired) {
+    mainBtn.addEventListener('click', function(e){ e.preventDefault(); triggerMainScan(); });
+    mainBtn._wired = true;
+  }
+  if (qcBtn && !qcBtn._wired) {
+    qcBtn.addEventListener('click', function(e){ e.preventDefault(); triggerQCScan(); });
+    qcBtn._wired = true;
+  }
+}
+wireScanButtons();
+setTimeout(wireScanButtons, 800);
+setTimeout(wireScanButtons, 2000);
+</script>
 </body>
 </html>
